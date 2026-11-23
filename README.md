@@ -2,50 +2,65 @@
 
 **One service. One workflow. Every screen in sync.**
 
-ChustaFlorg is a new, independent church presentation and live-production application built with C#, .NET 10 and Avalonia UI. It brings together the practical strengths of ProPresenter, Holyrics and StageFlow while prioritizing reliability, a clear workflow for volunteers, offline-first operation and safe live presentation.
+ChustaFlorg is a church presentation and live-service application built with **C# and .NET MAUI**. Its goal is to combine the most useful workflows found in ProPresenter, Holyrics and StageFlow while reducing friction for volunteers and improving reliability on service day.
 
-## Product principles
+## Product direction
 
-- **Reliable on service day:** autosave, recoverable projects, safe updates and a clear output status.
-- **Easy for volunteers:** guided first-run setup, simple mode, keyboard shortcuts and contextual help.
-- **Offline-first:** local projects, songs, media and Bible content remain usable without an internet connection when the relevant content is installed.
-- **One coherent workflow:** plan a service, arrange songs/scripture/media/slides, preview the next item and present it live.
-- **Multi-screen clarity:** separate audience output and operator view, with explicit display selection and a confidence preview.
-- **Portable content:** documented project format and import/export tools to reduce lock-in.
+- **ProPresenter-inspired:** service flow, slide editing, operator preview and audience presentation.
+- **Holyrics-inspired:** song and scripture workflows, fast search, accessible operation and remote-control direction.
+- **StageFlow foundation:** the developer's existing C#/.NET presentation experience, local project workflow, media, lyrics, Bible panel, themes and live presentation concepts.
+- **ChustaFlorg differentiators:** recovery-first design, offline-first libraries, volunteer-friendly guided mode, clear diagnostics and a coherent mobile/desktop experience.
 
-## Synthesis
-
-| Product | Strengths to build on |
-|---|---|
-| ProPresenter | Service playlists, rich slide design, layers, stage/audience outputs and production workflow |
-| Holyrics | Song and Bible workflows, accessible operation, remote control and church-focused tools |
-| StageFlow | C#/.NET + Avalonia foundation, local projects, lyrics, Bible panel, media library, themes and live presentation |
-
-ChustaFlorg is not affiliated with or endorsed by Renewed Vision, Holyrics or their developers. It will not copy their branding, proprietary code or assets.
-
-## MVP roadmap
-
-1. Project and service editor: create, reorder, edit and save slides.
-2. Live output: audience window, operator preview, next/previous, black screen and clear output state.
-3. Content library: songs, scripture references, images, videos and reusable slide templates.
-4. Reliability: autosave, crash recovery, missing-media warnings, backup/restore and diagnostics.
-5. Church workflow: service plans, volunteer-friendly mode, keyboard shortcuts and optional remote control.
-6. Interoperability: import/export common formats where technically and legally possible.
+ChustaFlorg is an independent project. It is not affiliated with or endorsed by Renewed Vision, Holyrics or their developers, and does not copy their branding, proprietary code or assets.
 
 ## Current implementation
 
-The first repository milestone establishes the Avalonia desktop application and its project model. Features in the roadmap are not considered complete until implemented and tested.
+The MAUI application currently provides an initial presentation workspace with:
+- A slide playlist with add and delete actions.
+- Slide title and text editing with a live preview.
+- Local project save and open using a versioned JSON model.
+- A separate live presentation window with previous/next navigation.
+- A responsive layout that rearranges the playlist, preview and inspector on narrower screens.
+
+This is an early MVP foundation, not a finished replacement for the three products. The current live window is a separate application window; selecting a specific physical output display and production-grade media playback remain future work.
+
+## Roadmap
+
+1. **Reliability:** autosave, crash recovery, project backups, integrity checks and diagnostics.
+2. **Worship library:** songs, verse/chorus structure, tags, search and duplicate detection.
+3. **Bible module:** translations with appropriate distribution rights, offline availability, bookmarks and notes.
+4. **Media engine:** image/video/audio playback, backgrounds, transition controls and missing-file repair.
+5. **Live production:** explicit display selection, audience/stage outputs, next-slide confidence monitor and blackout.
+6. **Remote control:** secure local-network pairing for phones and tablets, with connection status and fallback controls.
+7. **Interoperability:** import/export for documented and legally supported formats.
+8. **Volunteer mode:** guided setup, simple mode, keyboard shortcuts and contextual help.
+
+## Technology
+
+- .NET 10
+- .NET MAUI
+- C#
+- XAML
+- JSON project persistence (initial implementation)
 
 ## Build
 
-Requires the .NET 10 SDK.
+Install the .NET 10 SDK and the workloads required by your target platform.
 
-```bash
-dotnet restore
-dotnet build
-dotnet run
+Windows:
+```powershell
+dotnet workload restore
+dotnet build .\ChustaFlorg.slnx -f net10.0-windows10.0.19041.0
+dotnet run --project .\ChustaFlorg\ChustaFlorg.csproj -f net10.0-windows10.0.19041.0
 ```
 
-## License
+Android:
+```powershell
+dotnet build .\ChustaFlorg\ChustaFlorg.csproj -f net10.0-android
+```
 
-A license will be selected before public distribution. Until then, all rights are reserved.
+iOS builds require a compatible Mac build host and the Apple toolchain.
+
+## Licensing
+
+A project license and third-party content policy will be selected before public distribution. Bible translations, song lyrics and media must only be bundled or imported where their licenses permit it.
