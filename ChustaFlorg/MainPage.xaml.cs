@@ -10,7 +10,9 @@ public partial class MainPage : ContentPage
     private readonly ProjectService _projectService = new();
     private PresentationProject _project = new();
     private bool _loadingEditor;
+    private bool _recoveryChecked;
     private int _selectedIndex;
+    private CancellationTokenSource? _autosaveCts;
 
     public MainPage()
     {
@@ -21,6 +23,39 @@ public partial class MainPage : ContentPage
         SlidesList.ItemsSource = _slides;
         SlidesList.SelectedItem = _slides.FirstOrDefault();
         UpdatePreview();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_recoveryChecked)
+            return;
+
+        _recoveryChecked = true;
+        var recoveryPath = Path.Combine(FileSystem.AppDataDirectory, "autosave.chustaflorg");
+        if (!File.Exists(recoveryPath))
+            return;
+
+        var recover = await DisplayAlert("Récupération", "Une sauvegarde automatique a été trouvée. Voulez-vous la restaurer ?", "Restaurer", "Ignorer");
+        if (!recover)
+            return;
+
+        try
+        {
+            await using var stream = File.OpenRead(recoveryPath);
+            _project = await _projectService.LoadAsync(stream);
+            _slides.Clear();
+            foreach (var slide in _project.Slides)
+                _slides.Add(slide);
+            if (_slides.Count == 0)
+                _slides.Add(new Slide());
+            SlidesList.SelectedItem = _slides[0];
+            SetStatus("Sauvegarde récupérée automatiquement");
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Récupération impossible : " + ex.Message);
+        }
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -85,6 +120,7 @@ public partial class MainPage : ContentPage
         SlidesList.ItemsSource = null;
         SlidesList.ItemsSource = _slides;
         SlidesList.SelectedItem = slide;
+        ScheduleAutosave();
     }
 
     private void UpdatePreview()
@@ -111,6 +147,7 @@ public partial class MainPage : ContentPage
         _slides.Add(slide);
         SlidesList.SelectedItem = slide;
         SetStatus("Diapositive ajoutée");
+        ScheduleAutosave();
     }
 
     private async void OnDeleteSlideClicked(object? sender, EventArgs e)
@@ -130,6 +167,7 @@ public partial class MainPage : ContentPage
             SlidesList.SelectedItem = _slides[Math.Clamp(index, 0, _slides.Count - 1)];
 
         SetStatus("Diapositive supprimée");
+        ScheduleAutosave();
     }
 
     private void OnPreviousClicked(object? sender, EventArgs e) => SelectSlide(_selectedIndex - 1);
@@ -160,6 +198,7 @@ public partial class MainPage : ContentPage
             var path = Path.Combine(FileSystem.AppDataDirectory, safeName + ".chustaflorg");
             await _projectService.SaveAsync(_project, path);
             SetStatus("Enregistré localement · " + Path.GetFileName(path));
+            ScheduleAutosave();
         }
         catch (Exception ex)
         {
@@ -219,6 +258,35 @@ public partial class MainPage : ContentPage
             Title = "ChustaFlorg · Présentation en direct"
         });
         SetStatus("Fenêtre de présentation ouverte");
+    }
+
+    private void ScheduleAutosave()
+    {
+        _autosaveCts?.Cancel();
+        _autosaveCts?.Dispose();
+        var cancellation = new CancellationTokenSource();
+        _autosaveCts = cancellation;
+        _ = SaveAfterDelayAsync(cancellation);
+    }
+
+    private async Task SaveAfterDelayAsync(CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await Task.Delay(900, cancellation.Token);
+            _project.Slides = _slides.ToList();
+            var path = Path.Combine(FileSystem.AppDataDirectory, "autosave.chustaflorg");
+            await _projectService.SaveAsync(_project, path, cancellation.Token);
+            SetStatus("Sauvegarde automatique effectuée");
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer edit has scheduled the next autosave.
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Sauvegarde automatique impossible : " + ex.Message);
+        }
     }
 
     private void SetStatus(string message) => StatusLabel.Text = message;
