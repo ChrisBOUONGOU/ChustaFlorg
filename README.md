@@ -19,14 +19,15 @@ The MAUI application currently provides an initial presentation workspace with:
 - A slide playlist with add and delete actions.
 - Slide title and text editing with a live preview.
 - Local project save and open using a versioned JSON model.
-- A separate live presentation window with previous/next navigation.
-- A responsive layout that rearranges the playlist, preview and inspector on narrower screens.
+- Debounced automatic local save and a startup recovery prompt.
+- A live presentation view with previous/next navigation (separate window on Windows; full-screen modal view on mobile).
+- A responsive workspace that rearranges and scrolls the playlist, preview and inspector on narrower screens.
 
-This is an early MVP foundation, not a finished replacement for the three products. The current live window is a separate application window; selecting a specific physical output display and production-grade media playback remain future work.
+This is an early MVP foundation, not a finished replacement for the three products. Selecting a specific physical output display, stage/audience screen separation and production-grade media playback remain future work.
 
 ## Roadmap
 
-1. **Reliability:** autosave, crash recovery, project backups, integrity checks and diagnostics.
+1. **Reliability:** project backups, integrity checks, crash diagnostics and recovery testing.
 2. **Worship library:** songs, verse/chorus structure, tags, search and duplicate detection.
 3. **Bible module:** translations with appropriate distribution rights, offline availability, bookmarks and notes.
 4. **Media engine:** image/video/audio playback, backgrounds, transition controls and missing-file repair.
