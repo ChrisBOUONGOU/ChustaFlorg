@@ -28,7 +28,8 @@
             </HorizontalStackLayout>
         </Grid>
 
-        <Grid x:Name="Workspace" Grid.Row="1" Padding="14"
+        <ScrollView Grid.Row="1" Orientation="Vertical">
+        <Grid x:Name="Workspace" Padding="14"
               ColumnDefinitions="220,*,280" ColumnSpacing="12">
             <Border x:Name="PlaylistPanel" Grid.Column="0" BackgroundColor="#121A28"
                     Stroke="#263246" StrokeThickness="1" Padding="13"
@@ -118,5 +119,6 @@
                 </ScrollView>
             </Border>
         </Grid>
+        </ScrollView>
     </Grid>
 </ContentPage>
