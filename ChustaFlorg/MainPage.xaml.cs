@@ -216,9 +216,7 @@ public partial class MainPage : ContentPage
         var page = new LivePage(_slides.ToList(), _selectedIndex);
         Application.Current?.OpenWindow(new Window(page)
         {
-            Title = "ChustaFlorg · Présentation en direct",
-            Width = 1100,
-            Height = 700
+            Title = "ChustaFlorg · Présentation en direct"
         });
         SetStatus("Fenêtre de présentation ouverte");
     }
