@@ -11,6 +11,7 @@ public partial class MainPage : ContentPage
     private PresentationProject _project = new();
     private bool _loadingEditor;
     private bool _recoveryChecked;
+    private bool? _compactLayout;
     private int _selectedIndex;
     private CancellationTokenSource? _autosaveCts;
 
@@ -65,6 +66,10 @@ public partial class MainPage : ContentPage
             return;
 
         var compact = width < 850;
+        if (_compactLayout == compact)
+            return;
+        _compactLayout = compact;
+
         Workspace.ColumnDefinitions.Clear();
         Workspace.RowDefinitions.Clear();
 
