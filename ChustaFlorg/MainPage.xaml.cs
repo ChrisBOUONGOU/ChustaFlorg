@@ -66,6 +66,7 @@ public partial class MainPage : ContentPage
             return;
 
         var compact = width < 850;
+        Workspace.HeightRequest = compact ? 960 : Math.Max(600, height - 90);
         if (_compactLayout == compact)
             return;
         _compactLayout = compact;
