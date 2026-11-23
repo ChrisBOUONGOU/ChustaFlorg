@@ -35,11 +35,13 @@ public sealed class LivePage : ContentPage
         var next = new Button { Text = "Suivante →", BackgroundColor = Color.FromArgb("#7A1F3D"), TextColor = Colors.White };
         next.Clicked += (_, _) => ShowSlide(_index + 1);
         var close = new Button { Text = "Fermer", BackgroundColor = Color.FromArgb("#30202A"), TextColor = Colors.White };
-        close.Clicked += (_, _) =>
+        close.Clicked += async (_, _) =>
         {
             var parentWindow = Application.Current?.Windows.FirstOrDefault(window => window.Page == this);
             if (parentWindow is not null)
                 Application.Current?.CloseWindow(parentWindow);
+            else
+                await Navigation.PopModalAsync();
         };
 
         var controls = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Star), new(GridLength.Auto) }, ColumnSpacing = 10 };
