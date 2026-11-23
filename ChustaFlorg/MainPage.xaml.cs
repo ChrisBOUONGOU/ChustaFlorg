@@ -244,7 +244,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void OnLiveClicked(object? sender, EventArgs e)
+    private async void OnLiveClicked(object? sender, EventArgs e)
     {
         if (_slides.Count == 0)
         {
@@ -253,11 +253,16 @@ public partial class MainPage : ContentPage
         }
 
         var page = new LivePage(_slides.ToList(), _selectedIndex);
+#if WINDOWS
         Application.Current?.OpenWindow(new Window(page)
         {
             Title = "ChustaFlorg · Présentation en direct"
         });
         SetStatus("Fenêtre de présentation ouverte");
+#else
+        await Navigation.PushModalAsync(new NavigationPage(page));
+        SetStatus("Présentation ouverte");
+#endif
     }
 
     private void ScheduleAutosave()
