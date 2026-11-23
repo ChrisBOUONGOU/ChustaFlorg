@@ -1,9 +1,0 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ChustaFlorg.Views.MainWindow"
-        Title="ChustaFlorg"
-        Width="1440" Height="900"
-        MinWidth="1050" MinHeight="680"
-        Background="#0B0F17">
-  <Grid />
-</Window>
