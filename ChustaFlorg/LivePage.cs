@@ -35,7 +35,12 @@ public sealed class LivePage : ContentPage
         var next = new Button { Text = "Suivante →", BackgroundColor = Color.FromArgb("#7A1F3D"), TextColor = Colors.White };
         next.Clicked += (_, _) => ShowSlide(_index + 1);
         var close = new Button { Text = "Fermer", BackgroundColor = Color.FromArgb("#30202A"), TextColor = Colors.White };
-        close.Clicked += (_, _) => Application.Current?.CloseWindow(GetParentWindow());
+        close.Clicked += (_, _) =>
+        {
+            var parentWindow = Application.Current?.Windows.FirstOrDefault(window => window.Page == this);
+            if (parentWindow is not null)
+                Application.Current?.CloseWindow(parentWindow);
+        };
 
         var controls = new Grid { ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Star), new(GridLength.Auto) }, ColumnSpacing = 10 };
         controls.Add(previous, 0);
@@ -63,7 +68,6 @@ public sealed class LivePage : ContentPage
         ShowSlide(_index);
     }
 
-    private Window? GetParentWindow() => Application.Current?.Windows.FirstOrDefault(window => window.Page == this);
 
     private void ShowSlide(int index)
     {
