@@ -417,7 +417,7 @@ public sealed class WorshipPage : ContentView
         }).ToList();
         _addToPresentation(slides);
         _status.Text = $"{slides.Count} diapositive(s) ajoutée(s) au plan du culte.";
-        await DisplayAlert("Chant ajouté", $"{slides.Count} diapositive(s) ont été ajoutées à la fin de votre présentation.", "OK");
+        await ShowAlertAsync("Chant ajouté", $"{slides.Count} diapositive(s) ont été ajoutées à la fin de votre présentation.", "OK");
     }
 
 
@@ -470,7 +470,7 @@ public sealed class WorshipPage : ContentView
         if (string.IsNullOrWhiteSpace(name)) return;
         if (_selectedSong.Arrangements.Any(x => string.Equals(x.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
         {
-            await DisplayAlert("Nom déjà utilisé", "Choisissez un autre nom pour cet arrangement.", "OK");
+            await ShowAlertAsync("Nom déjà utilisé", "Choisissez un autre nom pour cet arrangement.", "OK");
             return;
         }
         var source = _selectedArrangement ?? _selectedSong.Arrangements.FirstOrDefault();
@@ -579,7 +579,7 @@ public sealed class WorshipPage : ContentView
         }
         await SaveLibraryAsync();
         FilterSongs();
-        await DisplayAlert("Importation terminée", $"{added} chant(s) importé(s). {skipped} doublon(s) potentiel(s) ignoré(s).", "OK");
+        await ShowAlertAsync("Importation terminée", $"{added} chant(s) importé(s). {skipped} doublon(s) potentiel(s) ignoré(s).", "OK");
     }
 
     private async Task ExportSongsAsync()
@@ -594,19 +594,19 @@ public sealed class WorshipPage : ContentView
         var pairs = WorshipImportService.FindDuplicates(_songs);
         if (pairs.Count == 0)
         {
-            await DisplayAlert("Détection des doublons", "Aucun doublon potentiel détecté.", "OK");
+            await ShowAlertAsync("Détection des doublons", "Aucun doublon potentiel détecté.", "OK");
             return;
         }
         var report = string.Join("\n", pairs.Take(12).Select(pair => $"• {pair.First.Title}  ↔  {pair.Second.Title}"));
         if (pairs.Count > 12) report += $"\n… et {pairs.Count - 12} autre(s) paire(s).";
-        await DisplayAlert($"{pairs.Count} doublon(s) potentiel(s)", report, "OK");
+        await ShowAlertAsync($"{pairs.Count} doublon(s) potentiel(s)", report, "OK");
     }
 
     private async Task ConfigureSyncAsync()
     {
-        var url = await DisplayPromptAsync("Synchronisation WebDAV", "URL HTTPS du fichier distant (ex. Nextcloud …/remote.php/dav/files/USER/ChustaFlorg/worship-library.json)");
+        var url = await ShowPromptAsync("Synchronisation WebDAV", "URL HTTPS du fichier distant (ex. Nextcloud …/remote.php/dav/files/USER/ChustaFlorg/worship-library.json)");
         if (string.IsNullOrWhiteSpace(url)) return;
-        var username = await DisplayPromptAsync("Compte WebDAV", "Nom d'utilisateur");
+        var username = await ShowPromptAsync("Compte WebDAV", "Nom d'utilisateur");
         if (username is null) return;
         var passwordEntry = new Entry { IsPassword = true, Placeholder = "Mot de passe WebDAV" };
         var completion = new TaskCompletionSource<string?>();
@@ -626,7 +626,7 @@ public sealed class WorshipPage : ContentView
                         Children =
                         {
                             new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await passwordPage.Navigation.PopModalAsync(); }) },
-                            new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await Navigation.PopModalAsync(); }) }
+                            new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await passwordPage.Navigation.PopModalAsync(); }) }
                         }
                     }
                 }
@@ -647,7 +647,7 @@ public sealed class WorshipPage : ContentView
         {
             if (!await _sync.IsConfiguredAsync())
             {
-                await DisplayAlert("Synchronisation", "Configurez d'abord votre URL WebDAV HTTPS.", "OK");
+                await ShowAlertAsync("Synchronisation", "Configurez d'abord votre URL WebDAV HTTPS.", "OK");
                 return;
             }
             var merged = await _sync.SyncAsync(_songs.ToList());
@@ -662,7 +662,7 @@ public sealed class WorshipPage : ContentView
         catch (Exception ex)
         {
             _status.Text = "Synchronisation impossible : " + ex.Message;
-            await DisplayAlert("Erreur de synchronisation", ex.Message, "OK");
+            await ShowAlertAsync("Erreur de synchronisation", ex.Message, "OK");
         }
     }
 
