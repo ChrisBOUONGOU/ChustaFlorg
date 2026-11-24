@@ -19,10 +19,6 @@
                 </VerticalStackLayout>
             </HorizontalStackLayout>
             <HorizontalStackLayout Grid.Column="1" Spacing="7" VerticalOptions="Center">
-                <Button Text="▤ Bible" Clicked="OnBibleClicked" Padding="12,8"
-                        BackgroundColor="#263246" TextColor="#D8B46A" FontSize="12" FontAttributes="Bold"/>
-                <Button Text="♫ Worship" Clicked="OnWorshipClicked" Padding="12,8"
-                        BackgroundColor="#263246" TextColor="#D8B46A" FontSize="12" FontAttributes="Bold"/>
                 <Button Text="Ouvrir" Clicked="OnOpenClicked" Padding="12,8"
                         BackgroundColor="#202C40" TextColor="White" FontSize="12"/>
                 <Button Text="Enregistrer" Clicked="OnSaveClicked" Padding="12,8"
@@ -34,7 +30,7 @@
 
         <ScrollView Grid.Row="1" Orientation="Vertical">
         <Grid x:Name="Workspace" Padding="14"
-              ColumnDefinitions="220,*,280" ColumnSpacing="12">
+              ColumnDefinitions="220,*,340" ColumnSpacing="12">
             <Border x:Name="PlaylistPanel" Grid.Column="0" BackgroundColor="#121A28"
                     Stroke="#263246" StrokeThickness="1" Padding="13"
                     StrokeShape="RoundRectangle 12">
@@ -98,31 +94,54 @@
                 </Grid>
             </Border>
 
-            <Border x:Name="InspectorPanel" Grid.Column="2" BackgroundColor="#121A28"
-                    Stroke="#263246" StrokeThickness="1" Padding="14"
-                    StrokeShape="RoundRectangle 12">
-                <ScrollView>
-                    <VerticalStackLayout Spacing="11">
-                        <Label Text="PROPRIÉTÉS" TextColor="#D8B46A" FontSize="10"
-                               FontAttributes="Bold" CharacterSpacing="1.4"/>
-                        <Label Text="TITRE" TextColor="#94A3B8" FontSize="10" FontAttributes="Bold"/>
-                        <Entry x:Name="TitleEditor" Placeholder="Titre de la diapositive"
-                               TextColor="White" PlaceholderColor="#64748B"
-                               BackgroundColor="#1A2435" TextChanged="OnEditorChanged"/>
-                        <Label Text="CONTENU" TextColor="#94A3B8" FontSize="10" FontAttributes="Bold"/>
-                        <Editor x:Name="BodyEditor" Placeholder="Saisissez le texte à afficher…"
-                                TextColor="White" PlaceholderColor="#64748B"
-                                BackgroundColor="#1A2435" AutoSize="TextChanges"
-                                MinimumHeightRequest="210" TextChanged="OnEditorChanged"/>
-                        <Label Text="CONSEIL" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                        <Label Text="Préparez et vérifiez vos diapositives avant de lancer la présentation."
-                               TextColor="#94A3B8" FontSize="11"/>
-                        <Label x:Name="StatusLabel" Text="Prêt · Projet local"
-                               TextColor="#D8B46A" FontSize="11" LineBreakMode="WordWrap"/>
+            <Grid Grid.Column="2" ColumnDefinitions="48,*" ColumnSpacing="0" BackgroundColor="#121A28">
+                <Border Grid.Column="0" BackgroundColor="#0B0F17" Stroke="#263246" StrokeThickness="1" Padding="4" StrokeShape="RoundRectangle 10">
+                    <VerticalStackLayout Spacing="7">
+                        <Button Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
+                        <Button Text="▣" Clicked="OnToolMediaClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
+                        <Button Text="🎨" Clicked="OnToolThemesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button Text="♫" Clicked="OnWorshipClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
+                        <Button Text="📖" Clicked="OnBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
                     </VerticalStackLayout>
-                </ScrollView>
-            </Border>
-        </Grid>
+                </Border>
+                <Grid Grid.Column="1" Margin="9,0,0,0">
+                    <Border x:Name="InspectorPanel" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <ScrollView><VerticalStackLayout Spacing="11">
+                            <Label Text="PROPRIÉTÉS" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold" CharacterSpacing="1.4"/>
+                            <Label Text="TITRE" TextColor="#94A3B8" FontSize="10" FontAttributes="Bold"/>
+                            <Entry x:Name="TitleEditor" Placeholder="Titre de la diapositive" TextColor="White" PlaceholderColor="#64748B" BackgroundColor="#1A2435" TextChanged="OnEditorChanged"/>
+                            <Label Text="CONTENU" TextColor="#94A3B8" FontSize="10" FontAttributes="Bold"/>
+                            <Editor x:Name="BodyEditor" Placeholder="Saisissez le texte à afficher…" TextColor="White" PlaceholderColor="#64748B" BackgroundColor="#1A2435" AutoSize="TextChanges" MinimumHeightRequest="210" TextChanged="OnEditorChanged"/>
+                            <Label Text="CONSEIL" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Label Text="Préparez et vérifiez vos diapositives avant de lancer la présentation." TextColor="#94A3B8" FontSize="11"/>
+                            <Label x:Name="StatusLabel" Text="Prêt · Projet local" TextColor="#D8B46A" FontSize="11" LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout></ScrollView>
+                    </Border>
+                    <Border x:Name="MediaPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="12"><Label Text="MÉDIATHÈQUE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Label Text="Ajouter des médias" TextColor="White" FontSize="18" FontAttributes="Bold"/>
+                            <Button Text="Importer une image" Clicked="OnImportImageClicked" BackgroundColor="#263246" TextColor="White"/>
+                            <Button Text="Importer une vidéo" Clicked="OnImportVideoClicked" BackgroundColor="#263246" TextColor="White"/>
+                            <Label x:Name="MediaStatusLabel" Text="Aucun média sélectionné" TextColor="#94A3B8" FontSize="11"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="ThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="10"><Label Text="THÈMES DE DIAPOSITIVE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Button Text="Bleu nuit" Clicked="OnThemeNightClicked" BackgroundColor="#111827" TextColor="White"/>
+                            <Button Text="Bordeaux" Clicked="OnThemeBurgundyClicked" BackgroundColor="#5B1D35" TextColor="White"/>
+                            <Button Text="Vert forêt" Clicked="OnThemeForestClicked" BackgroundColor="#164E3B" TextColor="White"/>
+                            <Button Text="Clair" Clicked="OnThemeLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="10"><Label Text="APPARENCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Button Text="Mode sombre" Clicked="OnDarkAppearanceClicked" BackgroundColor="#263246" TextColor="White"/>
+                            <Button Text="Mode clair" Clicked="OnLightAppearanceClicked" BackgroundColor="#E2E8F0" TextColor="#111827"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+            </Grid>        </Grid>
         </ScrollView>
     </Grid>
 </ContentPage>
