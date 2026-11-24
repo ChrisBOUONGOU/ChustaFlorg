@@ -7,6 +7,8 @@ public sealed class LivePage : ContentPage
     private readonly IReadOnlyList<Slide> _slides;
     private readonly Label _title;
     private readonly Label _body;
+    private readonly Image _background;
+    private readonly Grid _contentLayer;
     private int _index;
 
     public LivePage(IReadOnlyList<Slide> slides, int startIndex)
@@ -14,6 +16,8 @@ public sealed class LivePage : ContentPage
         _slides = slides;
         _index = Math.Clamp(startIndex, 0, slides.Count - 1);
         BackgroundColor = Color.FromArgb("#080B12");
+
+        _background = new Image { Aspect = Aspect.AspectFill, Opacity = 0.65, IsVisible = false };
         _title = new Label
         {
             FontSize = 26,
@@ -49,7 +53,7 @@ public sealed class LivePage : ContentPage
         controls.Add(next, 1);
         controls.Add(close, 2);
 
-        Content = new Grid
+        _contentLayer = new Grid
         {
             Padding = 36,
             RowDefinitions = new RowDefinitionCollection { new(GridLength.Star), new(GridLength.Auto) },
@@ -67,15 +71,48 @@ public sealed class LivePage : ContentPage
             }
         };
         Grid.SetRow(controls, 1);
+
+        Content = new Grid
+        {
+            Children = { _background, _contentLayer }
+        };
         ShowSlide(_index);
     }
 
-
-    private void ShowSlide(int index)
+    private async void ShowSlide(int index)
     {
         _index = Math.Clamp(index, 0, _slides.Count - 1);
         var slide = _slides[_index];
-        _title.Text = slide.Title;
-        _body.Text = slide.Body;
+
+        try
+        {
+            switch (slide.Transition)
+            {
+                case "Fondu":
+                    await _contentLayer.FadeTo(0, 120);
+                    break;
+                case "Glissement":
+                    await _contentLayer.TranslateTo(35, 0, 120);
+                    break;
+            }
+
+            BackgroundColor = Color.FromArgb(slide.BackgroundColor);
+            _background.Source = !string.IsNullOrWhiteSpace(slide.BackgroundPath) && File.Exists(slide.BackgroundPath)
+                ? ImageSource.FromFile(slide.BackgroundPath)
+                : null;
+            _background.IsVisible = _background.Source is not null;
+            _title.Text = slide.Title;
+            _body.Text = slide.Body;
+
+            _contentLayer.TranslationX = slide.Transition == "Glissement" ? -35 : 0;
+            await _contentLayer.FadeTo(1, slide.Transition == "Aucune" ? 0 : 180);
+            if (slide.Transition == "Glissement")
+                await _contentLayer.TranslateTo(0, 0, 180);
+        }
+        catch
+        {
+            _contentLayer.Opacity = 1;
+            _contentLayer.TranslationX = 0;
+        }
     }
 }
