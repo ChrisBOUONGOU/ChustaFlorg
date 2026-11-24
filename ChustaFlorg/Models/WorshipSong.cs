@@ -10,6 +10,7 @@ public sealed class WorshipSong
     public string Language { get; set; } = "Français";
     public List<string> Tags { get; set; } = [];
     public List<SongSection> Sections { get; set; } = [];
+    public List<SongArrangement> Arrangements { get; set; } = [];
     public DateTime ModifiedAtUtc { get; set; } = DateTime.UtcNow;
 }
 
@@ -20,6 +21,7 @@ public sealed class SongSection
     public int Number { get; set; } = 1;
     public string Label { get; set; } = string.Empty;
     public string Lyrics { get; set; } = string.Empty;
+    public string ChordLyrics { get; set; } = string.Empty;
 
     public string DisplayName => Type switch
     {
@@ -34,13 +36,13 @@ public sealed class SongSection
     };
 }
 
-public enum SongSectionType
+public sealed class SongArrangement
 {
-    Intro,
-    Verse,
-    PreChorus,
-    Chorus,
-    Bridge,
-    Tag,
-    Outro
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = "Version originale";
+    public List<Guid> SectionIds { get; set; } = [];
+    public int SemitoneOffset { get; set; }
+    public DateTime ModifiedAtUtc { get; set; } = DateTime.UtcNow;
 }
+
+public enum SongSectionType { Intro, Verse, PreChorus, Chorus, Bridge, Tag, Outro }
