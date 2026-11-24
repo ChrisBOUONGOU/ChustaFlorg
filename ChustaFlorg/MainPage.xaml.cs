@@ -250,6 +250,27 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnBibleClicked(object? sender, EventArgs e)
+    {
+        var page = new BiblePage(slides =>
+        {
+            foreach (var slide in slides)
+                _slides.Add(slide);
+
+            if (slides.Count > 0)
+            {
+                SlidesList.SelectedItem = slides[0];
+                _selectedIndex = _slides.IndexOf(slides[0]);
+                UpdatePreview();
+            }
+
+            SetStatus($"{slides.Count} diapositive(s) biblique(s) ajoutée(s) au plan du culte.");
+            ScheduleAutosave();
+        });
+
+        await Navigation.PushModalAsync(new NavigationPage(page));
+    }
+
     private async void OnWorshipClicked(object? sender, EventArgs e)
     {
         var page = new WorshipPage(slides =>
