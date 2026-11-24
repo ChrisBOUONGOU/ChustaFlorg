@@ -1,45 +1,31 @@
-# Worship module
+# Worship — advanced library tools
 
-## Goal
+## Alternate arrangements
+Each song can contain multiple arrangements. An arrangement stores an ordered list of section IDs, so the same chorus or verse can be repeated more than once. Create a named version, select a section in the song structure, and use Ajouter section active or Répéter refrain. Move or remove entries to build the order for that service. The arrangement's semitone offset is independent from the original song.
 
-A volunteer-friendly song workflow combining fast lookup and local organization (Holyrics), structured sections and service preparation (ProPresenter), and the existing C#/.NET slide workflow (StageFlow). This is an independent implementation and does not reuse their source code, branding or proprietary assets.
+## Bulk import
+Use Importer plusieurs chants and select one JSON, CSV or TXT file. JSON is a list of WorshipSong objects and is the best format for a full-fidelity backup/restore.
+CSV uses one row per section. Required columns:
+`Title,Author,Key,Tempo,SectionType,SectionNumber,Lyrics,Chords,Tags`
+- SectionType uses enum values: Intro, Verse, PreChorus, Chorus, Bridge, Tag, Outro.
+- Tags are separated with semicolons.
+- Repeat title and author on each row belonging to the same song.
+- Quote CSV cells containing commas, line breaks or double quotes; double embedded quotes.
+TXT uses `# Song title` to start a song, optional `@author:`, `@key:` and `@tempo:` metadata lines, then sections such as `[Verse 1]`, `[Chorus]` and `[Bridge]`. Text imports contain lyrics; use CSV or JSON to import chord sheets too.
+Import skips same-title/same-author candidates. The Détecter les doublons action reports exact normalized title matches and highly similar lyric text; it does not delete anything automatically.
 
-## Current MVP
+## Chords and transposition
+Enter chord sheets with bracketed chord tokens, for example:
+`[G]Amazing [D]grace, how [C]sweet the [G]sound`
+The editor's transpose buttons rewrite the selected section's chord sheet. Arrangement transpose buttons change that arrangement's semitone offset without modifying the original chord text. Enable Inclure les accords dans les diapositives to append the transposed chord sheet to generated slides.
+Only bracketed chord tokens are transposed, so ordinary lyric words are not mistaken for chords. Supported notation includes roots, sharps/flats, common qualities, extensions and slash bass notes.
 
-- Local JSON song catalog in the app's private data directory.
-- Search across title, author, key, tags and lyric text.
-- Metadata: title, author/composer, key, tags and optional BPM.
-- Editable sections: introduction, numbered verses, pre-chorus, chorus, bridge, final/tag and outro.
-- Automatic local save after edits.
-- Convert non-empty sections into slides in their saved order and append them to the existing service playlist.
-- Responsive desktop and compact layouts.
+## Cross-device synchronization (WebDAV)
+The app supports a user-provided WebDAV JSON file endpoint over HTTPS. Configure the same endpoint and credentials on each device, then select Synchroniser maintenant. A Nextcloud example endpoint is:
+`https://cloud.example.com/remote.php/dav/files/USERNAME/ChustaFlorg/worship-library.json`
+Create the parent folder in Nextcloud first, and use an app password where available. Enter the complete file URL, account name and app password in the app. The URL must use HTTPS. Credentials are stored with .NET MAUI SecureStorage, not in the song library JSON.
+The sync operation downloads the remote library, merges songs by their stable IDs, chooses the newest ModifiedAtUtc version for matching IDs, and uploads the merged result. Distinct songs are retained. Run sync sequentially: do not trigger simultaneous syncs from multiple devices.
+Current limitations: deletions are not synchronized (a deleted song on one device can reappear from another device); there is no user/team authentication layer beyond the WebDAV account, no server-side locking, and no conflict-resolution screen. Keep independent backups before using a shared library with important content.
 
-## User flow
-
-1. Open **♫ Worship** from the studio toolbar.
-2. Search for an existing song or create a new one.
-3. Add sections in the intended performance order and edit each section's lyrics.
-4. Choose **Ajouter le chant à la présentation** to append the sections to the service plan.
-5. Review the slides in the studio and save the presentation project.
-
-## Storage
-
-The library is saved locally as `worship-library.json` in `FileSystem.AppDataDirectory`. It is separate from the presentation project file. No account, remote server or cloud sync is required by this MVP.
-
-## Limitations / next steps
-
-- No drag-and-drop reordering or alternate arrangements.
-- No bulk import/export (TXT, CSV, OpenLyrics or ProPresenter formats).
-- No duplicate detection, categories/groups or favorites.
-- No chord charts, transpose tools or multilingual lyric variants.
-- No cloud synchronization or team collaboration.
-- No bundled lyrics: users must add content they own or are licensed to use.
-- Add automated tests and verify behavior on Windows, Android and iOS.
-
-## Product principles
-
-- Search matches lyric words, not only titles.
-- Editing autosaves locally.
-- Song sections become presentation slides without retyping.
-- Operators can prepare songs and work offline.
-- Copyright status must be respected for lyrics and imported content.
+## Copyright
+The importer does not download or bundle lyrics. Import only content you own or are authorized to use. The app does not include copyrighted song catalogs.
