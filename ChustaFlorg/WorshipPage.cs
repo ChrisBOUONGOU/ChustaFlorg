@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using ChustaFlorg.Models;
 using ChustaFlorg.Services;
 using System.Text.Json;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 
 namespace ChustaFlorg;
 
@@ -188,7 +189,9 @@ public sealed class WorshipPage : ContentPage
             MakeButton("Transpose −", "#263246", () => TransposeChordsAsync(-1)),
             MakeButton("Transpose +", "#263246", () => TransposeChordsAsync(1)),
             MakeButton("− 2 demi-tons", "#263246", () => TransposeChordsAsync(-2)),
-            MakeButton("+ 2 demi-tons", "#263246", () => TransposeChordsAsync(2))
+            MakeButton("+ 2 demi-tons", "#263246", () => TransposeChordsAsync(2)),
+            MakeButton("Arrangement −", "#263246", () => AdjustArrangementTransposeAsync(-1)),
+            MakeButton("Arrangement +", "#263246", () => AdjustArrangementTransposeAsync(1))
         }});
         editorPane.Children.Add(new HorizontalStackLayout { Spacing = 8, Children =
         {
@@ -549,6 +552,15 @@ public sealed class WorshipPage : ContentPage
         }
         await SaveLibraryAsync();
         _status.Text = $"Accords transposés de {semitones:+#;-#;0} demi-ton(s).";
+    }
+
+    private async Task AdjustArrangementTransposeAsync(int semitones)
+    {
+        if (_selectedArrangement is null) { _status.Text = "Créez ou sélectionnez un arrangement."; return; }
+        _selectedArrangement.SemitoneOffset = Math.Clamp(_selectedArrangement.SemitoneOffset + semitones, -12, 12);
+        _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        await SaveLibraryAsync();
+        _status.Text = $"Transposition de l'arrangement : {_selectedArrangement.SemitoneOffset:+#;-#;0} demi-ton(s).";
     }
 
     private async Task ImportSongsAsync()
