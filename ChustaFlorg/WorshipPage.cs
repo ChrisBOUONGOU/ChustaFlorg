@@ -360,7 +360,30 @@ public sealed class WorshipPage : ContentPage
     {
         if (_selectedSong is not null)
             _selectedSong.ModifiedAtUtc = DateTime.UtcNow;
-        await _library.SaveAsync(_songs);
+
+        // Take a UI-thread snapshot so rapid edits cannot mutate the collection
+        // while the JSON serializer is writing it asynchronously.
+        var snapshot = _songs.Select(song => new WorshipSong
+        {
+            Id = song.Id,
+            Title = song.Title,
+            Author = song.Author,
+            Key = song.Key,
+            Tempo = song.Tempo,
+            Language = song.Language,
+            Tags = [.. song.Tags],
+            ModifiedAtUtc = song.ModifiedAtUtc,
+            Sections = song.Sections.Select(section => new SongSection
+            {
+                Id = section.Id,
+                Type = section.Type,
+                Number = section.Number,
+                Label = section.Label,
+                Lyrics = section.Lyrics
+            }).ToList()
+        }).ToList();
+
+        await _library.SaveAsync(snapshot);
         _status.Text = "Bibliothèque enregistrée sur cet appareil";
     }
 
