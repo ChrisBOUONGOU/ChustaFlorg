@@ -100,8 +100,8 @@
                         <Button Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
                         <Button Text="▣" Clicked="OnToolMediaClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
                         <Button Text="🎨" Clicked="OnToolThemesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
-                        <Button Text="♫" Clicked="OnWorshipClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
-                        <Button Text="📖" Clicked="OnBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
+                        <Button Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
                         <Button Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
                     </VerticalStackLayout>
                 </Border>
@@ -132,6 +132,20 @@
                             <Button Text="Bordeaux" Clicked="OnThemeBurgundyClicked" BackgroundColor="#5B1D35" TextColor="White"/>
                             <Button Text="Vert forêt" Clicked="OnThemeForestClicked" BackgroundColor="#164E3B" TextColor="White"/>
                             <Button Text="Clair" Clicked="OnThemeLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="LyricsPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="12"><Label Text="CHANTS / WORSHIP" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Label Text="Bibliothèque de chants" TextColor="White" FontSize="17" FontAttributes="Bold"/>
+                            <Label Text="Gérez vos chants, leurs arrangements et les paroles projetées." TextColor="#94A3B8" FontSize="11"/>
+                            <Button Text="Ouvrir Worship" Clicked="OnWorshipClicked" BackgroundColor="#7A1F3D" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="12"><Label Text="BIBLE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Label Text="Recherche biblique" TextColor="White" FontSize="17" FontAttributes="Bold"/>
+                            <Label Text="Consultez les traductions, recherchez des passages et retrouvez vos favoris et notes." TextColor="#94A3B8" FontSize="11"/>
+                            <Button Text="Ouvrir la Bible" Clicked="OnBibleClicked" BackgroundColor="#263246" TextColor="White"/>
                         </VerticalStackLayout>
                     </Border>
                     <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
