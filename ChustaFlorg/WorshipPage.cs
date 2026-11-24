@@ -23,6 +23,7 @@ public sealed class WorshipPage : ContentPage
     private WorshipSong? _selectedSong;
     private SongSection? _selectedSection;
     private bool _loading;
+    private CancellationTokenSource? _saveCts;
     private readonly Color _panel = Color.FromArgb("#121A28");
     private readonly Color _field = Color.FromArgb("#1A2435");
     private readonly Color _gold = Color.FromArgb("#D8B46A");
@@ -89,7 +90,7 @@ public sealed class WorshipPage : ContentPage
             {
                 _selectedSection.Lyrics = _lyrics.Text ?? string.Empty;
                 RefreshSections();
-                _ = SaveLibraryAsync();
+                ScheduleLibrarySave();
             }
         };
 
@@ -215,7 +216,7 @@ public sealed class WorshipPage : ContentPage
             return;
         _selectedSong = song;
         _songSections.Clear();
-        foreach (var section in song.Sections.OrderBy(x => x.Type).ThenBy(x => x.Number))
+        foreach (var section in song.Sections)
             _songSections.Add(section);
         _loading = true;
         _title.Text = song.Title;
@@ -273,7 +274,7 @@ public sealed class WorshipPage : ContentPage
         _selectedSong.Tags = (_tags.Text ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         _selectedSong.ModifiedAtUtc = DateTime.UtcNow;
         FilterSongs();
-        _ = SaveLibraryAsync();
+        ScheduleLibrarySave();
     }
 
     private async Task DeleteSectionAsync()
@@ -323,11 +324,39 @@ public sealed class WorshipPage : ContentPage
         await Navigation.PopModalAsync();
     }
 
+    private void RefreshSections()
+    {
+        _sections.ItemsSource = null;
+        _sections.ItemsSource = _songSections;
+        _sections.SelectedItem = _selectedSection;
+    }
+
+    private void ScheduleLibrarySave()
+    {
+        _saveCts?.Cancel();
+        _saveCts?.Dispose();
+        var cts = new CancellationTokenSource();
+        _saveCts = cts;
+        _ = SaveLibraryAfterDelayAsync(cts);
+    }
+
+    private async Task SaveLibraryAfterDelayAsync(CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(350, cts.Token);
+            await SaveLibraryAsync();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { _status.Text = "Sauvegarde impossible : " + ex.Message; }
+    }
+
     private async Task SaveLibraryAsync()
     {
         if (_selectedSong is not null)
             _selectedSong.ModifiedAtUtc = DateTime.UtcNow;
         await _library.SaveAsync(_songs);
+        _status.Text = "Bibliothèque enregistrée sur cet appareil";
     }
 
     private static string SectionTypeLabel(SongSectionType type) => type switch
