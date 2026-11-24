@@ -14,12 +14,13 @@ public sealed class WorshipPage : ContentPage
     private readonly Entry _title = new() { Placeholder = "Titre du chant" };
     private readonly Entry _author = new() { Placeholder = "Auteur / compositeur" };
     private readonly Entry _key = new() { Placeholder = "Tonalité (ex. Sol, D, G)" };
+    private readonly Entry _tempo = new() { Placeholder = "Tempo en BPM (facultatif)", Keyboard = Keyboard.Numeric };
     private readonly Entry _tags = new() { Placeholder = "Tags séparés par des virgules" };
     private readonly Picker _sectionType = new() { Title = "Type de section" };
     private readonly Editor _lyrics = new() { Placeholder = "Saisissez les paroles de cette section…", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 150 };
     private readonly CollectionView _sections = new() { SelectionMode = SelectionMode.Single };
     private readonly Label _status = new() { Text = "Bibliothèque locale", TextColor = Color.FromArgb("#D8B46A"), FontSize = 12 };
-    private readonly List<SongSection> _songSections = [];
+    private readonly ObservableCollection<SongSection> _songSections = [];
     private WorshipSong? _selectedSong;
     private SongSection? _selectedSection;
     private bool _loading;
@@ -83,6 +84,7 @@ public sealed class WorshipPage : ContentPage
         _title.TextChanged += (_, _) => UpdateSongMetadata();
         _author.TextChanged += (_, _) => UpdateSongMetadata();
         _key.TextChanged += (_, _) => UpdateSongMetadata();
+        _tempo.TextChanged += (_, _) => UpdateSongMetadata();
         _tags.TextChanged += (_, _) => UpdateSongMetadata();
         _lyrics.TextChanged += (_, _) =>
         {
@@ -118,6 +120,7 @@ public sealed class WorshipPage : ContentPage
         editorPane.Children.Add(_title);
         editorPane.Children.Add(_author);
         editorPane.Children.Add(_key);
+        editorPane.Children.Add(_tempo);
         editorPane.Children.Add(_tags);
         editorPane.Children.Add(new Label { Text = "STRUCTURE DU CHANT", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
         editorPane.Children.Add(_sections);
@@ -222,6 +225,7 @@ public sealed class WorshipPage : ContentPage
         _title.Text = song.Title;
         _author.Text = song.Author;
         _key.Text = song.Key;
+        _tempo.Text = song.Tempo > 0 ? song.Tempo.ToString() : string.Empty;
         _tags.Text = string.Join(", ", song.Tags);
         _loading = false;
         _sections.SelectedItem = _songSections.FirstOrDefault();
@@ -271,6 +275,7 @@ public sealed class WorshipPage : ContentPage
         _selectedSong.Title = _title.Text?.Trim() ?? string.Empty;
         _selectedSong.Author = _author.Text?.Trim() ?? string.Empty;
         _selectedSong.Key = _key.Text?.Trim() ?? string.Empty;
+        _selectedSong.Tempo = int.TryParse(_tempo.Text, out var tempo) ? Math.Clamp(tempo, 0, 400) : 0;
         _selectedSong.Tags = (_tags.Text ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         _selectedSong.ModifiedAtUtc = DateTime.UtcNow;
         FilterSongs();
@@ -297,7 +302,7 @@ public sealed class WorshipPage : ContentPage
         _selectedSong = null;
         _songSections.Clear();
         _songList.SelectedItem = null;
-        _title.Text = _author.Text = _key.Text = _tags.Text = _lyrics.Text = string.Empty;
+        _title.Text = _author.Text = _key.Text = _tempo.Text = _tags.Text = _lyrics.Text = string.Empty;
         await SaveLibraryAsync();
     }
 
