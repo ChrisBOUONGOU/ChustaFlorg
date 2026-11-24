@@ -105,7 +105,7 @@ public sealed class LivePage : ContentPage
             _body.Text = slide.Body;
 
             _contentLayer.TranslationX = slide.Transition == "Glissement" ? -35 : 0;
-            await _contentLayer.FadeTo(1, slide.Transition == "Aucune" ? 0 : 180);
+            await _contentLayer.FadeTo(1, slide.Transition == "Aucune" ? 0u : 180u);
             if (slide.Transition == "Glissement")
                 await _contentLayer.TranslateTo(0, 0, 180);
         }
