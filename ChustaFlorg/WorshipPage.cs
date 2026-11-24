@@ -341,10 +341,12 @@ public sealed class WorshipPage : ContentPage
         var section = new SongSection { Type = type, Number = number };
         _selectedSong.Sections.Add(section);
         _songSections.Add(section);
-        if (_selectedArrangement is not null && _selectedArrangement.Name == "Version originale")
+        var originalArrangement = _selectedSong.Arrangements.FirstOrDefault(x => x.Name == "Version originale");
+        if (originalArrangement is not null)
         {
-            _selectedArrangement.SectionIds.Add(section.Id);
-            RefreshArrangementRows();
+            originalArrangement.SectionIds.Add(section.Id);
+            if (_selectedArrangement?.Id == originalArrangement.Id)
+                RefreshArrangementRows();
         }
         _sections.SelectedItem = section;
         await SaveLibraryAsync();
@@ -363,6 +365,13 @@ public sealed class WorshipPage : ContentPage
         _songSections.Move(currentIndex, targetIndex);
         _selectedSong.Sections.Clear();
         _selectedSong.Sections.AddRange(_songSections);
+        var originalArrangement = _selectedSong.Arrangements.FirstOrDefault(x => x.Name == "Version originale");
+        if (originalArrangement is not null)
+        {
+            originalArrangement.SectionIds = _songSections.Select(x => x.Id).ToList();
+            if (_selectedArrangement?.Id == originalArrangement.Id)
+                RefreshArrangementRows();
+        }
         _sections.SelectedItem = _selectedSection;
         await SaveLibraryAsync();
     }
