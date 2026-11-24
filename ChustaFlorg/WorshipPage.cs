@@ -297,6 +297,9 @@ public sealed class WorshipPage : ContentPage
         _tags.Text = string.Join(", ", song.Tags);
         _loading = false;
         _sections.SelectedItem = _songSections.FirstOrDefault();
+        EnsureOriginalArrangement(song);
+        _selectedArrangement = null;
+        RefreshArrangements();
         _status.Text = $"{song.Sections.Count} section(s) · Modifications enregistrées automatiquement";
     }
 
@@ -334,6 +337,11 @@ public sealed class WorshipPage : ContentPage
         var section = new SongSection { Type = type, Number = number };
         _selectedSong.Sections.Add(section);
         _songSections.Add(section);
+        if (_selectedArrangement is not null && _selectedArrangement.Name == "Version originale")
+        {
+            _selectedArrangement.SectionIds.Add(section.Id);
+            RefreshArrangementRows();
+        }
         _sections.SelectedItem = section;
         await SaveLibraryAsync();
     }
