@@ -382,7 +382,10 @@ public sealed class WorshipPage : ContentPage
         if (_selectedSong is null || _selectedSection is null) return;
         _selectedSong.Sections.Remove(_selectedSection);
         _songSections.Remove(_selectedSection);
+        foreach (var arrangement in _selectedSong.Arrangements)
+            arrangement.SectionIds.RemoveAll(id => id == _selectedSection.Id);
         _selectedSection = null;
+        RefreshArrangements();
         _lyrics.Text = string.Empty;
         _sections.SelectedItem = null;
         await SaveLibraryAsync();
