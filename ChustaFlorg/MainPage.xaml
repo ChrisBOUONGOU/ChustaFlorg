@@ -118,13 +118,36 @@
                             <Label x:Name="StatusLabel" Text="Prêt · Projet local" TextColor="#D8B46A" FontSize="11" LineBreakMode="WordWrap"/>
                         </VerticalStackLayout></ScrollView>
                     </Border>
-                    <Border x:Name="MediaPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="12"><Label Text="MÉDIATHÈQUE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                            <Label Text="Ajouter des médias" TextColor="White" FontSize="18" FontAttributes="Bold"/>
-                            <Button Text="Importer une image" Clicked="OnImportImageClicked" BackgroundColor="#263246" TextColor="White"/>
-                            <Button Text="Importer une vidéo" Clicked="OnImportVideoClicked" BackgroundColor="#263246" TextColor="White"/>
-                            <Label x:Name="MediaStatusLabel" Text="Aucun média sélectionné" TextColor="#94A3B8" FontSize="11"/>
-                        </VerticalStackLayout>
+                    <Border x:Name="MediaPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 12">
+                        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="9">
+                            <Label Text="MÉDIATHÈQUE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Entry Grid.Row="1" x:Name="MediaSearchEntry" Placeholder="Rechercher un média..." TextChanged="OnMediaSearchChanged" TextColor="White" PlaceholderColor="#64748B" BackgroundColor="#1A2435"/>
+                            <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="6">
+                                <Button Text="+ Image" Clicked="OnImportImageClicked" BackgroundColor="#263246" TextColor="White" FontSize="11" Padding="6"/>
+                                <Button Grid.Column="1" Text="+ Vidéo" Clicked="OnImportVideoClicked" BackgroundColor="#263246" TextColor="White" FontSize="11" Padding="6"/>
+                            </Grid>
+                            <CollectionView Grid.Row="3" x:Name="MediaAssetsView" SelectionMode="Single" SelectionChanged="OnMediaAssetSelected">
+                                <CollectionView.ItemTemplate><DataTemplate>
+                                    <Border BackgroundColor="#1A2435" Stroke="#334155" StrokeThickness="1" Padding="9" Margin="0,3" StrokeShape="RoundRectangle 8">
+                                        <Grid ColumnDefinitions="34,*,Auto">
+                                            <Label Text="{Binding Icon}" FontSize="22" VerticalOptions="Center"/>
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                <Label Text="{Binding Name}" TextColor="White" FontSize="12" LineBreakMode="TailTruncation"/>
+                                                <Label Text="{Binding Kind}" TextColor="#94A3B8" FontSize="10"/>
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="2" Text="›" TextColor="#D8B46A" FontSize="20" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate></CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <VerticalStackLayout Grid.Row="4" Spacing="6">
+                                <Label x:Name="MediaStatusLabel" Text="Aucun média sélectionné" TextColor="#94A3B8" FontSize="11"/>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                    <Button Text="Insérer dans la diapositive" Clicked="OnInsertMediaClicked" BackgroundColor="#7A1F3D" TextColor="White" FontSize="11" Padding="7"/>
+                                    <Button Grid.Column="1" Text="Supprimer" Clicked="OnDeleteMediaClicked" BackgroundColor="#30202A" TextColor="#FCA5A5" FontSize="11" Padding="7"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Grid>
                     </Border>
                     <Border x:Name="ThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <VerticalStackLayout Spacing="10"><Label Text="THÈMES DE DIAPOSITIVE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
@@ -141,13 +164,7 @@
                             <Button Text="Ouvrir Worship" Clicked="OnWorshipClicked" BackgroundColor="#7A1F3D" TextColor="White"/>
                         </VerticalStackLayout>
                     </Border>
-                    <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="12"><Label Text="BIBLE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                            <Label Text="Recherche biblique" TextColor="White" FontSize="17" FontAttributes="Bold"/>
-                            <Label Text="Consultez les traductions, recherchez des passages et retrouvez vos favoris et notes." TextColor="#94A3B8" FontSize="11"/>
-                            <Button Text="Ouvrir la Bible" Clicked="OnBibleClicked" BackgroundColor="#263246" TextColor="White"/>
-                        </VerticalStackLayout>
-                    </Border>
+                    <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="BibleContentHost"/></Border>
                     <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <VerticalStackLayout Spacing="10"><Label Text="APPARENCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
                             <Button Text="Mode sombre" Clicked="OnDarkAppearanceClicked" BackgroundColor="#263246" TextColor="White"/>
