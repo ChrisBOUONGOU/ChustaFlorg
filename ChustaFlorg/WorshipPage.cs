@@ -412,6 +412,223 @@ public sealed class WorshipPage : ContentPage
         await Navigation.PopModalAsync();
     }
 
+
+    private void EnsureOriginalArrangement(WorshipSong song)
+    {
+        if (song.Arrangements.Count == 0)
+            song.Arrangements.Add(new SongArrangement
+            {
+                Name = "Version originale",
+                SectionIds = song.Sections.Select(section => section.Id).ToList()
+            });
+    }
+
+    private void RefreshArrangements()
+    {
+        if (_selectedSong is null) return;
+        EnsureOriginalArrangement(_selectedSong);
+        var currentName = _selectedArrangement?.Name;
+        _arrangementPicker.ItemsSource = _selectedSong.Arrangements.Select(x => x.Name).ToList();
+        var index = _selectedSong.Arrangements.FindIndex(x => x.Name == currentName);
+        _arrangementPicker.SelectedIndex = index >= 0 ? index : 0;
+        if (_arrangementPicker.SelectedIndex >= 0)
+            _selectedArrangement = _selectedSong.Arrangements[_arrangementPicker.SelectedIndex];
+        RefreshArrangementRows();
+    }
+
+    private void OnArrangementChanged(object? sender, EventArgs e)
+    {
+        if (_selectedSong is null || _arrangementPicker.SelectedIndex < 0) return;
+        _selectedArrangement = _selectedSong.Arrangements[_arrangementPicker.SelectedIndex];
+        RefreshArrangementRows();
+    }
+
+    private void RefreshArrangementRows()
+    {
+        _arrangementRows.Clear();
+        if (_selectedSong is null || _selectedArrangement is null) return;
+        foreach (var id in _selectedArrangement.SectionIds)
+        {
+            var section = _selectedSong.Sections.FirstOrDefault(x => x.Id == id);
+            if (section is not null)
+                _arrangementRows.Add(new ArrangementEntry(Guid.NewGuid(), id, section.DisplayName));
+        }
+    }
+
+    private async Task CreateArrangementAsync()
+    {
+        if (_selectedSong is null) { _status.Text = "Sélectionnez un chant."; return; }
+        var name = await DisplayPromptAsync("Nouvel arrangement", "Nom de cette version (ex. Culte du dimanche)");
+        if (string.IsNullOrWhiteSpace(name)) return;
+        if (_selectedSong.Arrangements.Any(x => string.Equals(x.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            await DisplayAlert("Nom déjà utilisé", "Choisissez un autre nom pour cet arrangement.", "OK");
+            return;
+        }
+        var source = _selectedArrangement ?? _selectedSong.Arrangements.FirstOrDefault();
+        var arrangement = new SongArrangement
+        {
+            Name = name.Trim(),
+            SectionIds = source is null ? _selectedSong.Sections.Select(x => x.Id).ToList() : [.. source.SectionIds],
+            SemitoneOffset = source?.SemitoneOffset ?? 0
+        };
+        _selectedSong.Arrangements.Add(arrangement);
+        _selectedArrangement = arrangement;
+        RefreshArrangements();
+        _arrangementPicker.SelectedIndex = _selectedSong.Arrangements.Count - 1;
+        await SaveLibraryAsync();
+    }
+
+    private async Task AddSectionToArrangementAsync()
+    {
+        if (_selectedSong is null || _selectedArrangement is null || _selectedSection is null) return;
+        _selectedArrangement.SectionIds.Add(_selectedSection.Id);
+        _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        RefreshArrangementRows();
+        await SaveLibraryAsync();
+    }
+
+    private async Task AddChorusToArrangementAsync()
+    {
+        if (_selectedSong is null || _selectedArrangement is null) return;
+        var chorus = _selectedSong.Sections.Where(x => x.Type == SongSectionType.Chorus).ToList();
+        if (chorus.Count == 0) { _status.Text = "Ce chant ne contient pas de refrain."; return; }
+        _selectedArrangement.SectionIds.AddRange(chorus.Select(x => x.Id));
+        _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        RefreshArrangementRows();
+        await SaveLibraryAsync();
+    }
+
+    private async Task MoveArrangementEntryAsync(int offset)
+    {
+        if (_selectedArrangement is null || _arrangementList.SelectedItem is not ArrangementEntry entry) return;
+        var index = _arrangementRows.IndexOf(entry);
+        var target = index + offset;
+        if (index < 0 || target < 0 || target >= _arrangementRows.Count) return;
+        _arrangementRows.Move(index, target);
+        _selectedArrangement.SectionIds = _arrangementRows.Select(x => x.SectionId).ToList();
+        _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        await SaveLibraryAsync();
+    }
+
+    private async Task RemoveArrangementEntryAsync()
+    {
+        if (_selectedArrangement is null || _arrangementList.SelectedItem is not ArrangementEntry entry) return;
+        _arrangementRows.Remove(entry);
+        _selectedArrangement.SectionIds = _arrangementRows.Select(x => x.SectionId).ToList();
+        _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        await SaveLibraryAsync();
+    }
+
+    private async Task TransposeChordsAsync(int semitones)
+    {
+        if (_selectedSection is null) { _status.Text = "Sélectionnez une section contenant des accords."; return; }
+        _selectedSection.ChordLyrics = ChordTransposer.Transpose(_selectedSection.ChordLyrics, semitones);
+        _loading = true;
+        _chordLyrics.Text = _selectedSection.ChordLyrics;
+        _loading = false;
+        if (_selectedArrangement is not null)
+        {
+            _selectedArrangement.SemitoneOffset = 0;
+            _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
+        }
+        await SaveLibraryAsync();
+        _status.Text = $"Accords transposés de {semitones:+#;-#;0} demi-ton(s).";
+    }
+
+    private async Task ImportSongsAsync()
+    {
+        var file = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Importer une bibliothèque de chants",
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                [DevicePlatform.WinUI] = [".json", ".csv", ".txt"],
+                [DevicePlatform.Android] = ["application/json", "text/csv", "text/plain"],
+                [DevicePlatform.iOS] = ["public.json", "public.comma-separated-values-text", "public.plain-text"],
+                [DevicePlatform.MacCatalyst] = ["public.json", "public.comma-separated-values-text", "public.plain-text"]
+            })
+        });
+        if (file is null) return;
+        await using var stream = await file.OpenReadAsync();
+        var imported = await _importer.ImportAsync(stream, file.FileName);
+        var added = 0;
+        var skipped = 0;
+        foreach (var song in imported)
+        {
+            var duplicate = _songs.Any(existing =>
+                WorshipImportService.Normalize(existing.Title) == WorshipImportService.Normalize(song.Title) &&
+                (string.IsNullOrWhiteSpace(existing.Author) || string.IsNullOrWhiteSpace(song.Author) ||
+                 WorshipImportService.Normalize(existing.Author) == WorshipImportService.Normalize(song.Author)));
+            if (duplicate) { skipped++; continue; }
+            EnsureOriginalArrangement(song);
+            _songs.Add(song);
+            added++;
+        }
+        await SaveLibraryAsync();
+        FilterSongs();
+        await DisplayAlert("Importation terminée", $"{added} chant(s) importé(s). {skipped} doublon(s) potentiel(s) ignoré(s).", "OK");
+    }
+
+    private async Task ExportSongsAsync()
+    {
+        var path = Path.Combine(FileSystem.CacheDirectory, $"chustaflorg-worship-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(_songs, new JsonSerializerOptions { WriteIndented = true }));
+        await Share.Default.RequestAsync(new ShareFileRequest("Exporter la bibliothèque Worship", new ShareFile(path)));
+    }
+
+    private async Task DetectDuplicatesAsync()
+    {
+        var pairs = WorshipImportService.FindDuplicates(_songs);
+        if (pairs.Count == 0)
+        {
+            await DisplayAlert("Détection des doublons", "Aucun doublon potentiel détecté.", "OK");
+            return;
+        }
+        var report = string.Join("\n", pairs.Take(12).Select(pair => $"• {pair.First.Title}  ↔  {pair.Second.Title}"));
+        if (pairs.Count > 12) report += $"\n… et {pairs.Count - 12} autre(s) paire(s).";
+        await DisplayAlert($"{pairs.Count} doublon(s) potentiel(s)", report, "OK");
+    }
+
+    private async Task ConfigureSyncAsync()
+    {
+        var url = await DisplayPromptAsync("Synchronisation WebDAV", "URL HTTPS du fichier distant (ex. Nextcloud …/remote.php/dav/files/USER/ChustaFlorg/worship-library.json)");
+        if (string.IsNullOrWhiteSpace(url)) return;
+        var username = await DisplayPromptAsync("Compte WebDAV", "Nom d'utilisateur");
+        if (username is null) return;
+        var password = await DisplayPromptAsync("Mot de passe WebDAV", "Mot de passe", isPassword: true);
+        if (password is null) return;
+        await _sync.ConfigureAsync(url, username, password);
+        _status.Text = "Synchronisation configurée · identifiants stockés de manière sécurisée";
+    }
+
+    private async Task SyncNowAsync()
+    {
+        try
+        {
+            if (!await _sync.IsConfiguredAsync())
+            {
+                await DisplayAlert("Synchronisation", "Configurez d'abord votre URL WebDAV HTTPS.", "OK");
+                return;
+            }
+            var merged = await _sync.SyncAsync(_songs.ToList());
+            _songs.Clear();
+            foreach (var song in merged) _songs.Add(song);
+            if (_selectedSong is not null)
+                _selectedSong = _songs.FirstOrDefault(x => x.Id == _selectedSong.Id);
+            await SaveLibraryAsync();
+            FilterSongs();
+            _status.Text = $"Synchronisation terminée · {merged.Count} chant(s)";
+        }
+        catch (Exception ex)
+        {
+            _status.Text = "Synchronisation impossible : " + ex.Message;
+            await DisplayAlert("Erreur de synchronisation", ex.Message, "OK");
+        }
+    }
+
+    private sealed record ArrangementEntry(Guid EntryId, Guid SectionId, string DisplayName);
+
     private void RefreshSections()
     {
         _sections.ItemsSource = null;
