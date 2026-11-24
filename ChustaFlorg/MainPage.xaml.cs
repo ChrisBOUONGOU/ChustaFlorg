@@ -250,6 +250,27 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnWorshipClicked(object? sender, EventArgs e)
+    {
+        var page = new WorshipPage(slides =>
+        {
+            foreach (var slide in slides)
+                _slides.Add(slide);
+
+            if (slides.Count > 0)
+            {
+                SlidesList.SelectedItem = slides[0];
+                _selectedIndex = _slides.IndexOf(slides[0]);
+                UpdatePreview();
+            }
+
+            SetStatus($"{slides.Count} diapositive(s) de chant ajoutée(s) au plan du culte.");
+            ScheduleAutosave();
+        });
+
+        await Navigation.PushModalAsync(new NavigationPage(page));
+    }
+
     private async void OnLiveClicked(object? sender, EventArgs e)
     {
         if (_slides.Count == 0)
