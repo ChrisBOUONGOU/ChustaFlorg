@@ -91,7 +91,6 @@ public sealed class WorshipPage : ContentPage
             if (!_loading && _selectedSection is not null)
             {
                 _selectedSection.Lyrics = _lyrics.Text ?? string.Empty;
-                RefreshSections();
                 ScheduleLibrarySave();
             }
         };
@@ -303,7 +302,6 @@ public sealed class WorshipPage : ContentPage
         _selectedSong.Tempo = int.TryParse(_tempo.Text, out var tempo) ? Math.Clamp(tempo, 0, 400) : 0;
         _selectedSong.Tags = (_tags.Text ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         _selectedSong.ModifiedAtUtc = DateTime.UtcNow;
-        FilterSongs();
         ScheduleLibrarySave();
     }
 
