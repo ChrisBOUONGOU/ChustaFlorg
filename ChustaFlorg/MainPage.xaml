@@ -23,7 +23,7 @@
                         BackgroundColor="#202C40" TextColor="White" FontSize="12"/>
                 <Button Text="Enregistrer" Clicked="OnSaveClicked" Padding="12,8"
                         BackgroundColor="#202C40" TextColor="White" FontSize="12"/>
-                <Button Text="▶ Direct" Clicked="OnLiveClicked" Padding="13,8"
+                <Button Text="▶ Multi-écrans" Clicked="OnLiveClicked" Padding="13,8"
                         BackgroundColor="#7A1F3D" TextColor="White" FontAttributes="Bold" FontSize="12"/>
             </HorizontalStackLayout>
         </Grid>
