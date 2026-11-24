@@ -47,7 +47,7 @@ public sealed class BiblePage : ContentPage
         {
             var label = new Label { TextColor = Colors.White, FontSize = 13 };
             label.SetBinding(Label.TextProperty, nameof(BibleBookmark.Reference));
-            return new Border { Padding = 8, Margin = new Thickness(0, 2), Stroke = Color.FromArgb("#334155"), StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 }, Content = label };
+            return new Border { Padding = 8, Margin = new Thickness(0, 2), Stroke = Color.FromArgb("#334155"), StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(8) }, Content = label };
         });
         _bookmarksView.SelectionChanged += OnBookmarkSelected;
 
