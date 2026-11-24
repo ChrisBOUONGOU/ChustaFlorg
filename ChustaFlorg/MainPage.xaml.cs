@@ -18,6 +18,7 @@ public partial class MainPage : ContentPage
         public string Icon => Kind switch { "Image" => "▧", "Video" => "▶", "Audio" => "♫", _ => "•" };
     }
     private readonly ProjectService _projectService = new();
+    private readonly ReliabilityService _reliabilityService = new();
     private PresentationProject _project = new();
     private bool _loadingEditor;
     private bool _recoveryChecked;
@@ -52,30 +53,60 @@ public partial class MainPage : ContentPage
             return;
 
         _recoveryChecked = true;
-        var recoveryPath = Path.Combine(FileSystem.AppDataDirectory, "autosave.chustaflorg");
-        if (!File.Exists(recoveryPath))
+        var recoveryPath = _reliabilityService.AutosavePath;
+        var latestBackup = _reliabilityService.GetLatestBackupPath();
+        var hasAutosave = File.Exists(recoveryPath);
+        if (!hasAutosave && latestBackup is null)
             return;
 
-        var recover = await DisplayAlert("Récupération", "Une sauvegarde automatique a été trouvée. Voulez-vous la restaurer ?", "Restaurer", "Ignorer");
-        if (!recover)
+        var prompt = hasAutosave
+            ? "Une sauvegarde automatique a été trouvée. Voulez-vous la restaurer ?"
+            : "L'autosauvegarde est absente. Une sauvegarde de secours existe. Voulez-vous la restaurer ?";
+        if (!await DisplayAlert("Récupération", prompt, "Restaurer", "Ignorer"))
             return;
 
         try
         {
-            await using var stream = File.OpenRead(recoveryPath);
-            _project = await _projectService.LoadAsync(stream);
-            _slides.Clear();
-            foreach (var slide in _project.Slides)
-                _slides.Add(slide);
-            if (_slides.Count == 0)
-                _slides.Add(new Slide());
-            SlidesList.SelectedItem = _slides[0];
-            SetStatus("Sauvegarde récupérée automatiquement");
+            if (hasAutosave)
+            {
+                try
+                {
+                    await LoadProjectFromPathAsync(recoveryPath);
+                    SetStatus("Sauvegarde automatique récupérée.");
+                    return;
+                }
+                catch (Exception autosaveError)
+                {
+                    _reliabilityService.LogError("Recovery / autosave", autosaveError);
+                    latestBackup = _reliabilityService.GetLatestBackupPath();
+                    if (latestBackup is null)
+                        throw;
+                }
+            }
+
+            await _reliabilityService.RestoreBackupAsync(latestBackup!, recoveryPath);
+            await LoadProjectFromPathAsync(recoveryPath);
+            SetStatus("Sauvegarde de secours restaurée.");
         }
         catch (Exception ex)
         {
-            SetStatus("Récupération impossible : " + ex.Message);
+            _reliabilityService.LogError("Recovery", ex);
+            SetStatus("Récupération impossible. Consultez Fiabilité > Diagnostics.");
         }
+    }
+
+    private async Task LoadProjectFromPathAsync(string path)
+    {
+        await using var stream = File.OpenRead(path);
+        _project = await _projectService.LoadAsync(stream);
+        _slides.Clear();
+        foreach (var slide in _project.Slides)
+            _slides.Add(slide);
+        if (_slides.Count == 0)
+            _slides.Add(new Slide());
+        _selectedIndex = 0;
+        SlidesList.SelectedItem = _slides[0];
+        UpdatePreview();
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -125,7 +156,7 @@ public partial class MainPage : ContentPage
             for (var row = 0; row < 2; row++)
                 ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton };
+            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton };
             for (var i = 0; i < toolButtons.Length; i++)
             {
                 Grid.SetRow(toolButtons[i], i / 4);
@@ -158,7 +189,7 @@ public partial class MainPage : ContentPage
             ToolBarLayout.ColumnSpacing = 0;
             ToolBarLayout.RowSpacing = 7;
             ToolBarLayout.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(38)));
-            for (var row = 0; row < 7; row++)
+            for (var row = 0; row < 8; row++)
                 ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
             var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton };
@@ -283,6 +314,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
+            _reliabilityService.LogError("Save project", ex);
             SetStatus("Erreur d'enregistrement : " + ex.Message);
         }
     }
@@ -321,6 +353,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
+            _reliabilityService.LogError("Open project", ex);
             SetStatus("Impossible d'ouvrir : " + ex.Message);
         }
     }
@@ -335,6 +368,7 @@ public partial class MainPage : ContentPage
         LyricsPanel.IsVisible = panel == "Lyrics";
         BiblePanel.IsVisible = panel == "Bible";
         RemotePanel.IsVisible = panel == "Remote";
+        ReliabilityPanel.IsVisible = panel == "Reliability";
     }
 
     private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
@@ -344,6 +378,11 @@ public partial class MainPage : ContentPage
     private void OnToolLyricsClicked(object? sender, EventArgs e) => ShowRightPanel("Lyrics");
     private void OnToolBibleClicked(object? sender, EventArgs e) => ShowRightPanel("Bible");
     private void OnToolRemoteClicked(object? sender, EventArgs e) => ShowRightPanel("Remote");
+    private async void OnToolReliabilityClicked(object? sender, EventArgs e)
+    {
+        ShowRightPanel("Reliability");
+        await RunDiagnosticsAsync();
+    }
 
     private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
 
@@ -602,7 +641,9 @@ public partial class MainPage : ContentPage
         {
             await Task.Delay(900, cancellation.Token);
             _project.Slides = _slides.ToList();
-            var path = Path.Combine(FileSystem.AppDataDirectory, "autosave.chustaflorg");
+            var path = _reliabilityService.AutosavePath;
+            if (File.Exists(path))
+                await _reliabilityService.CreateBackupAsync(path, cancellation.Token);
             await _projectService.SaveAsync(_project, path, cancellation.Token);
             SetStatus("Sauvegarde automatique effectuée");
         }
@@ -612,10 +653,123 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
+            _reliabilityService.LogError("Autosave", ex);
             SetStatus("Sauvegarde automatique impossible : " + ex.Message);
         }
     }
 
+    private async void OnCreateBackupClicked(object? sender, EventArgs e)
+    {
+        var temporaryPath = Path.Combine(_reliabilityService.RootDirectory, "manual-backup-source.chustaflorg");
+        try
+        {
+            _project.Slides = _slides.ToList();
+            await _projectService.SaveAsync(_project, temporaryPath);
+            await _reliabilityService.CreateBackupAsync(temporaryPath);
+            BackupStatusLabel.Text = $"Sauvegarde créée. {_reliabilityService.GetBackupCount()} copie(s) conservée(s).";
+            SetStatus("Sauvegarde manuelle créée.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Manual backup", ex);
+            BackupStatusLabel.Text = "Échec de la sauvegarde : " + ex.Message;
+        }
+        finally
+        {
+            try { if (File.Exists(temporaryPath)) File.Delete(temporaryPath); } catch { }
+        }
+    }
+
+    private async void OnRestoreBackupClicked(object? sender, EventArgs e)
+    {
+        var backupPath = _reliabilityService.GetLatestBackupPath();
+        if (backupPath is null)
+        {
+            BackupStatusLabel.Text = "Aucune sauvegarde disponible.";
+            return;
+        }
+
+        var confirmed = await DisplayAlert("Restaurer une sauvegarde",
+            "Le projet chargé sera remplacé par la dernière sauvegarde. Une copie de l'état actuel sera créée avant la restauration.",
+            "Restaurer", "Annuler");
+        if (!confirmed)
+            return;
+
+        var temporaryPath = Path.Combine(_reliabilityService.RootDirectory, "restore-safety-copy.chustaflorg");
+        try
+        {
+            _project.Slides = _slides.ToList();
+            await _projectService.SaveAsync(_project, temporaryPath);
+            await _reliabilityService.CreateBackupAsync(temporaryPath);
+            await _reliabilityService.RestoreBackupAsync(backupPath, _reliabilityService.AutosavePath);
+            await LoadProjectFromPathAsync(_reliabilityService.AutosavePath);
+            BackupStatusLabel.Text = $"Restauration terminée. {_reliabilityService.GetBackupCount()} copie(s) conservée(s).";
+            SetStatus("Sauvegarde restaurée avec succès.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Restore backup", ex);
+            BackupStatusLabel.Text = "Restauration impossible : " + ex.Message;
+        }
+        finally
+        {
+            try { if (File.Exists(temporaryPath)) File.Delete(temporaryPath); } catch { }
+        }
+    }
+
+    private async void OnRunDiagnosticsClicked(object? sender, EventArgs e) => await RunDiagnosticsAsync();
+
+    private Task RunDiagnosticsAsync()
+    {
+        try
+        {
+            var autosaveExists = File.Exists(_reliabilityService.AutosavePath);
+            var backupCount = _reliabilityService.GetBackupCount();
+            var projectValid = _slides.Count > 0 && _slides.All(slide => slide is not null && !string.IsNullOrWhiteSpace(slide.Title));
+            var missingMedia = _slides.Count(slide =>
+                (!string.IsNullOrWhiteSpace(slide.BackgroundPath) && !File.Exists(slide.BackgroundPath)) ||
+                (!string.IsNullOrWhiteSpace(slide.BackgroundAudioPath) && !File.Exists(slide.BackgroundAudioPath)));
+            var checks = new[]
+            {
+                $"Plateforme : {DeviceInfo.Platform}",
+                $"Version : {AppInfo.VersionString}",
+                $"Diapositives : {_slides.Count}",
+                $"Projet : {(projectValid ? "OK" : "À vérifier")}",
+                $"Autosauvegarde : {(autosaveExists ? "présente" : "absente")}",
+                $"Sauvegardes de secours : {backupCount}",
+                $"Médias importés : {_mediaAssets.Count}",
+                $"Références média manquantes : {missingMedia}",
+                $"Télécommande : {(_remoteServer is null ? "arrêtée" : "active")}"
+            };
+            ReliabilityStatusLabel.Text = string.Join(Environment.NewLine, checks);
+            BackupStatusLabel.Text = $"{backupCount} sauvegarde(s) disponible(s).";
+            DiagnosticsLogLabel.Text = File.Exists(_reliabilityService.CrashLogPath)
+                ? string.Join(Environment.NewLine, File.ReadLines(_reliabilityService.CrashLogPath).TakeLast(8))
+                : "Aucune erreur enregistrée.";
+            if (missingMedia > 0 || !projectValid)
+                ReliabilityStatusLabel.Text += Environment.NewLine + "Résultat : certaines vérifications nécessitent votre attention.";
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Diagnostics", ex);
+            ReliabilityStatusLabel.Text = "Diagnostic incomplet : " + ex.Message;
+        }
+        return Task.CompletedTask;
+    }
+
+    private void OnClearDiagnosticsClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (File.Exists(_reliabilityService.CrashLogPath))
+                File.Delete(_reliabilityService.CrashLogPath);
+            DiagnosticsLogLabel.Text = "Journal effacé.";
+        }
+        catch (Exception ex)
+        {
+            DiagnosticsLogLabel.Text = "Impossible d'effacer le journal : " + ex.Message;
+        }
+    }
 
     private async void OnStartRemoteHostClicked(object? sender, EventArgs e)
     {
