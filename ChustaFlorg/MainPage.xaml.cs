@@ -499,16 +499,31 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        var page = new LivePage(_slides.ToList(), _selectedIndex);
+        var session = new LiveProductionSession(_slides.ToList(), _selectedIndex);
 #if WINDOWS
-        Application.Current?.OpenWindow(new Window(page)
+        var app = Application.Current;
+        if (app is null)
         {
-            Title = "ChustaFlorg · Présentation en direct"
+            SetStatus("Impossible d'ouvrir les écrans.");
+            return;
+        }
+
+        app.OpenWindow(new Window(new LivePage(session, LiveScreenRole.Public))
+        {
+            Title = "ChustaFlorg · Écran public"
         });
-        SetStatus("Fenêtre de présentation ouverte");
+        app.OpenWindow(new Window(new LivePage(session, LiveScreenRole.Operator))
+        {
+            Title = "ChustaFlorg · Écran opérateur"
+        });
+        app.OpenWindow(new Window(new LivePage(session, LiveScreenRole.Stage))
+        {
+            Title = "ChustaFlorg · Écran de scène"
+        });
+        SetStatus("Production lancée : 3 fenêtres synchronisées. Déplacez chaque fenêtre sur l'écran souhaité.");
 #else
-        await Navigation.PushModalAsync(new NavigationPage(page));
-        SetStatus("Présentation ouverte");
+        await Navigation.PushModalAsync(new NavigationPage(new LivePage(session, LiveScreenRole.Operator)));
+        SetStatus("Présentation ouverte. Le mode multi-fenêtres dépend de la plateforme.");
 #endif
     }
 
