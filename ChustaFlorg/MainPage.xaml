@@ -105,6 +105,7 @@
                         <Button x:Name="ToolBibleButton" Grid.Row="4" Grid.Column="0" Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
                         <Button x:Name="ToolAppearanceButton" Grid.Row="5" Grid.Column="0" Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
                         <Button x:Name="ToolRemoteButton" Grid.Row="6" Grid.Column="0" Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
+                        <Button x:Name="ToolReliabilityButton" Grid.Row="7" Grid.Column="0" Text="✓" Clicked="OnToolReliabilityClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="20"/>
                     </Grid>
                 </Border>
                 <Grid x:Name="RightPanelHost" Grid.Column="1" Margin="9,0,0,0">
@@ -202,6 +203,26 @@
                             <Button Text="Mode sombre" Clicked="OnDarkAppearanceClicked" BackgroundColor="#263246" TextColor="White"/>
                             <Button Text="Mode clair" Clicked="OnLightAppearanceClicked" BackgroundColor="#E2E8F0" TextColor="#111827"/>
                         </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="ReliabilityPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <ScrollView>
+                            <VerticalStackLayout Spacing="11">
+                                <Label Text="FIABILITÉ & DIAGNOSTICS" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                                <Label Text="ÉTAT DE L'APPLICATION" TextColor="#94A3B8" FontSize="9" FontAttributes="Bold"/>
+                                <Label x:Name="ReliabilityStatusLabel" Text="Diagnostic non exécuté" TextColor="#86EFAC" FontSize="11" LineBreakMode="WordWrap"/>
+                                <Button Text="Lancer le diagnostic" Clicked="OnRunDiagnosticsClicked" BackgroundColor="#263246" TextColor="White" FontSize="11"/>
+                                <BoxView HeightRequest="1" Color="#334155"/>
+                                <Label Text="SAUVEGARDES" TextColor="#D8B46A" FontSize="9" FontAttributes="Bold"/>
+                                <Label x:Name="BackupStatusLabel" Text="Aucune vérification" TextColor="#94A3B8" FontSize="10" LineBreakMode="WordWrap"/>
+                                <Button Text="Créer une sauvegarde maintenant" Clicked="OnCreateBackupClicked" BackgroundColor="#7A1F3D" TextColor="White" FontSize="11"/>
+                                <Button Text="Restaurer la dernière sauvegarde" Clicked="OnRestoreBackupClicked" BackgroundColor="#263246" TextColor="White" FontSize="11"/>
+                                <Label Text="La restauration remplace le projet actuellement chargé. Une copie de sécurité sera créée avant le remplacement." TextColor="#94A3B8" FontSize="10" LineBreakMode="WordWrap"/>
+                                <BoxView HeightRequest="1" Color="#334155"/>
+                                <Label Text="JOURNAL DES ERREURS" TextColor="#D8B46A" FontSize="9" FontAttributes="Bold"/>
+                                <Label x:Name="DiagnosticsLogLabel" Text="Aucune erreur enregistrée." TextColor="#94A3B8" FontSize="10" LineBreakMode="WordWrap"/>
+                                <Button Text="Effacer le journal" Clicked="OnClearDiagnosticsClicked" BackgroundColor="#30202A" TextColor="#FCA5A5" FontSize="11"/>
+                            </VerticalStackLayout>
+                        </ScrollView>
                     </Border>
                 </Grid>
             </Grid>        </Grid>
