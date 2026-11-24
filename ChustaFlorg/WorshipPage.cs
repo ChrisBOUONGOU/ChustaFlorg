@@ -545,11 +545,6 @@ public sealed class WorshipPage : ContentPage
         _loading = true;
         _chordLyrics.Text = _selectedSection.ChordLyrics;
         _loading = false;
-        if (_selectedArrangement is not null)
-        {
-            _selectedArrangement.SemitoneOffset = 0;
-            _selectedArrangement.ModifiedAtUtc = DateTime.UtcNow;
-        }
         await SaveLibraryAsync();
         _status.Text = $"Accords transposés de {semitones:+#;-#;0} demi-ton(s).";
     }
