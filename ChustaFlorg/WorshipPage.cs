@@ -305,6 +305,7 @@ public sealed class WorshipPage : ContentPage
         _selectedSection = _sections.SelectedItem as SongSection;
         _loading = true;
         _lyrics.Text = _selectedSection?.Lyrics ?? string.Empty;
+        _chordLyrics.Text = _selectedSection?.ChordLyrics ?? string.Empty;
         _loading = false;
     }
 
@@ -397,15 +398,21 @@ public sealed class WorshipPage : ContentPage
             return;
         }
 
-        var slides = _selectedSong.Sections
-            .Where(x => !string.IsNullOrWhiteSpace(x.Lyrics))
-            .Select(x => new Slide
-            {
-                Title = $"{_selectedSong.Title} · {x.DisplayName}",
-                Body = x.Lyrics.Trim(),
-                BackgroundColor = "#111827",
-                TextColor = "#FFFFFF"
-            }).ToList();
+        var orderedIds = _selectedArrangement?.SectionIds ?? _selectedSong.Sections.Select(x => x.Id).ToList();
+        var arrangedSections = orderedIds
+            .Select(id => _selectedSong.Sections.FirstOrDefault(section => section.Id == id))
+            .Where(section => section is not null && !string.IsNullOrWhiteSpace(section.Lyrics))
+            .Cast<SongSection>()
+            .ToList();
+        var slides = arrangedSections.Select(x => new Slide
+        {
+            Title = $"{_selectedSong.Title} · {x.DisplayName}",
+            Body = _includeChords.IsToggled && !string.IsNullOrWhiteSpace(x.ChordLyrics)
+                ? x.Lyrics.Trim() + "\n\n" + ChordTransposer.Transpose(x.ChordLyrics, _selectedArrangement?.SemitoneOffset ?? 0)
+                : x.Lyrics.Trim(),
+            BackgroundColor = "#111827",
+            TextColor = "#FFFFFF"
+        }).ToList();
         _addToPresentation(slides);
         _status.Text = $"{slides.Count} diapositive(s) ajoutée(s) au plan du culte.";
         await DisplayAlert("Chant ajouté", $"{slides.Count} diapositive(s) ont été ajoutées à la fin de votre présentation.", "OK");
@@ -679,7 +686,16 @@ public sealed class WorshipPage : ContentPage
                 Type = section.Type,
                 Number = section.Number,
                 Label = section.Label,
-                Lyrics = section.Lyrics
+                Lyrics = section.Lyrics,
+                ChordLyrics = section.ChordLyrics
+            }).ToList(),
+            Arrangements = song.Arrangements.Select(arrangement => new SongArrangement
+            {
+                Id = arrangement.Id,
+                Name = arrangement.Name,
+                SectionIds = [.. arrangement.SectionIds],
+                SemitoneOffset = arrangement.SemitoneOffset,
+                ModifiedAtUtc = arrangement.ModifiedAtUtc
             }).ToList()
         }).ToList();
 
