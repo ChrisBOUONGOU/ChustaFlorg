@@ -9,7 +9,6 @@ public sealed class ReliabilityService
     {
         RootDirectory = FileSystem.AppDataDirectory;
         BackupDirectory = Path.Combine(RootDirectory, "Backups");
-        Directory.CreateDirectory(BackupDirectory);
     }
 
     public string RootDirectory { get; }
