@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using ChustaFlorg.Models;
 using ChustaFlorg.Services;
+using System.Text.Json;
 
 namespace ChustaFlorg;
 
@@ -8,6 +9,8 @@ public sealed class WorshipPage : ContentPage
 {
     private readonly ObservableCollection<WorshipSong> _songs = [];
     private readonly WorshipLibraryService _library = new();
+    private readonly WorshipImportService _importer = new();
+    private readonly WorshipSyncService _sync = new();
     private readonly Action<IReadOnlyList<Slide>> _addToPresentation;
     private readonly SearchBar _search = new() { Placeholder = "Rechercher un chant, un auteur, un mot des paroles…" };
     private readonly CollectionView _songList = new() { SelectionMode = SelectionMode.Single, HeightRequest = 330 };
@@ -16,6 +19,11 @@ public sealed class WorshipPage : ContentPage
     private readonly Entry _key = new() { Placeholder = "Tonalité (ex. Sol, D, G)" };
     private readonly Entry _tempo = new() { Placeholder = "Tempo en BPM (facultatif)", Keyboard = Keyboard.Numeric };
     private readonly Entry _tags = new() { Placeholder = "Tags séparés par des virgules" };
+    private readonly Editor _chordLyrics = new() { Placeholder = "Accords : [G]Amazing [D]grace", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 100 };
+    private readonly Picker _arrangementPicker = new() { Title = "Arrangement" };
+    private readonly ObservableCollection<ArrangementEntry> _arrangementRows = [];
+    private readonly CollectionView _arrangementList = new() { SelectionMode = SelectionMode.Single, HeightRequest = 130 };
+    private readonly Switch _includeChords = new();
     private readonly Picker _sectionType = new() { Title = "Type de section" };
     private readonly Editor _lyrics = new() { Placeholder = "Saisissez les paroles de cette section…", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 150 };
     private readonly CollectionView _sections = new() { SelectionMode = SelectionMode.Single, HeightRequest = 170 };
@@ -23,6 +31,7 @@ public sealed class WorshipPage : ContentPage
     private readonly ObservableCollection<SongSection> _songSections = [];
     private WorshipSong? _selectedSong;
     private SongSection? _selectedSection;
+    private SongArrangement? _selectedArrangement;
     private bool _loading;
     private CancellationTokenSource? _saveCts;
     private readonly Color _panel = Color.FromArgb("#121A28");
@@ -86,6 +95,15 @@ public sealed class WorshipPage : ContentPage
         _key.TextChanged += (_, _) => UpdateSongMetadata();
         _tempo.TextChanged += (_, _) => UpdateSongMetadata();
         _tags.TextChanged += (_, _) => UpdateSongMetadata();
+        _chordLyrics.TextChanged += (_, _) =>
+        {
+            if (!_loading && _selectedSection is not null)
+            {
+                _selectedSection.ChordLyrics = _chordLyrics.Text ?? string.Empty;
+                ScheduleLibrarySave();
+            }
+        };
+        _arrangementPicker.SelectedIndexChanged += OnArrangementChanged;
         _lyrics.TextChanged += (_, _) =>
         {
             if (!_loading && _selectedSection is not null)
