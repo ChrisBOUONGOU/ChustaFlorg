@@ -72,8 +72,12 @@ public sealed class RemoteControlService : IAsyncDisposable
                 var pieces = firstLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (pieces.Length < 2) return;
                 var target = new Uri("http://localhost" + pieces[1]);
-                var query = System.Web.HttpUtility.ParseQueryString(target.Query);
-                var validPin = query["pin"] == Pin;
+                var pinValue = target.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => part.Split('=', 2))
+                    .Where(parts => parts.Length == 2 && parts[0] == "pin")
+                    .Select(parts => Uri.UnescapeDataString(parts[1]))
+                    .FirstOrDefault();
+                var validPin = pinValue == Pin;
                 var path = target.AbsolutePath.Trim('/').ToLowerInvariant();
 
                 object payload;
@@ -83,7 +87,16 @@ public sealed class RemoteControlService : IAsyncDisposable
                 {
                     if (path == "next") _session.Move(1);
                     else if (path == "previous") _session.Move(-1);
-                    else if (path != "status") payload = new { ok = false, error = "not_found" };
+                    else if (path == "status") { }
+                    else
+                    {
+                        payload = new { ok = false, error = "not_found" };
+                        var errorBody = JsonSerializer.SerializeToUtf8Bytes(payload);
+                        var errorHeader = Encoding.ASCII.GetBytes($"HTTP/1.1 404 Not Found\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: {errorBody.Length}\r\nConnection: close\r\n\r\n");
+                        await stream.WriteAsync(errorHeader, token);
+                        await stream.WriteAsync(errorBody, token);
+                        return;
+                    }
                     payload = Snapshot();
                 }
 
