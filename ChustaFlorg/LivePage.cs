@@ -121,24 +121,6 @@ public sealed class LivePage : ContentPage
             _root.Children.Add(content);
         }
 
-        if (_role == LiveScreenRole.Public)
-        {
-            _root.Children.Add(new Grid
-            {
-                Children =
-                {
-                    new VerticalStackLayout
-                    {
-                        Padding = 50,
-                        Spacing = 28,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        Children = { _title, _body }
-                    }
-                }
-            });
-        }
-
         Content = _root;
     }
 
