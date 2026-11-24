@@ -157,13 +157,7 @@
                             <Button Text="Clair" Clicked="OnThemeLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827"/>
                         </VerticalStackLayout>
                     </Border>
-                    <Border x:Name="LyricsPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="12"><Label Text="CHANTS / WORSHIP" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                            <Label Text="Bibliothèque de chants" TextColor="White" FontSize="17" FontAttributes="Bold"/>
-                            <Label Text="Gérez vos chants, leurs arrangements et les paroles projetées." TextColor="#94A3B8" FontSize="11"/>
-                            <Button Text="Ouvrir Worship" Clicked="OnWorshipClicked" BackgroundColor="#7A1F3D" TextColor="White"/>
-                        </VerticalStackLayout>
-                    </Border>
+                    <Border x:Name="LyricsPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="WorshipContentHost"/></Border>
                     <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="BibleContentHost"/></Border>
                     <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <VerticalStackLayout Spacing="10"><Label Text="APPARENCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
