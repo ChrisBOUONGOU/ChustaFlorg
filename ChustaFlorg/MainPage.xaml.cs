@@ -84,6 +84,8 @@ public partial class MainPage : ContentPage
                 }
             }
 
+            await using (var backupValidation = File.OpenRead(latestBackup!))
+                _ = await _projectService.LoadAsync(backupValidation);
             await _reliabilityService.RestoreBackupAsync(latestBackup!, recoveryPath);
             await LoadProjectFromPathAsync(recoveryPath);
             SetStatus("Sauvegarde de secours restaurée.");
@@ -698,6 +700,8 @@ public partial class MainPage : ContentPage
         var temporaryPath = Path.Combine(_reliabilityService.RootDirectory, "restore-safety-copy.chustaflorg");
         try
         {
+            await using (var backupValidation = File.OpenRead(backupPath))
+                _ = await _projectService.LoadAsync(backupValidation);
             _project.Slides = _slides.ToList();
             await _projectService.SaveAsync(_project, temporaryPath);
             await _reliabilityService.CreateBackupAsync(temporaryPath);
