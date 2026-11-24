@@ -15,7 +15,7 @@ public partial class MainPage : ContentPage
         public string Name { get; init; } = string.Empty;
         public string Path { get; init; } = string.Empty;
         public string Kind { get; init; } = string.Empty;
-        public string Icon => Kind == "Image" ? "▧" : "▶";
+        public string Icon => Kind switch { "Image" => "▧", "Video" => "▶", "Audio" => "♫", _ => "•" };
     }
     private readonly ProjectService _projectService = new();
     private PresentationProject _project = new();
@@ -155,6 +155,9 @@ public partial class MainPage : ContentPage
         var slide = SlidesList.SelectedItem as Slide ?? _slides[Math.Clamp(_selectedIndex, 0, _slides.Count - 1)];
         PreviewTitle.Text = slide.Title;
         PreviewBody.Text = slide.Body;
+        PreviewBackground.Source = !string.IsNullOrWhiteSpace(slide.BackgroundPath) && File.Exists(slide.BackgroundPath) ? ImageSource.FromFile(slide.BackgroundPath) : null;
+        PreviewBackground.IsVisible = PreviewBackground.Source is not null;
+        PreviewPanel.BackgroundColor = Color.FromArgb(slide.BackgroundColor);
     }
 
     private void OnAddSlideClicked(object? sender, EventArgs e)
@@ -324,7 +327,7 @@ public partial class MainPage : ContentPage
         foreach (var path in Directory.EnumerateFiles(MediaDirectory).OrderBy(p => System.IO.Path.GetFileName(p)))
         {
             var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-            var kind = ext is ".mp4" or ".mov" or ".avi" or ".mkv" or ".wmv" ? "Video" : "Image";
+            var kind = ext is ".mp4" or ".mov" or ".avi" or ".mkv" or ".wmv" or ".webm" ? "Video" : ext is ".mp3" or ".wav" or ".m4a" or ".aac" or ".ogg" or ".flac" or ".wma" ? "Audio" : "Image";
             _mediaAssets.Add(new MediaLibraryItem { Name = System.IO.Path.GetFileName(path), Path = path, Kind = kind });
         }
     }
@@ -364,6 +367,7 @@ public partial class MainPage : ContentPage
 
     private async void OnImportImageClicked(object? sender, EventArgs e) => await ImportMediaAsync("Image");
     private async void OnImportVideoClicked(object? sender, EventArgs e) => await ImportMediaAsync("Vidéo");
+    private async void OnImportAudioClicked(object? sender, EventArgs e) => await ImportMediaAsync("Audio");
 
     private void OnInsertMediaClicked(object? sender, EventArgs e)
     {
@@ -374,6 +378,84 @@ public partial class MainPage : ContentPage
             SetStatus("Image associée à la diapositive sélectionnée.");
         }
         else SetStatus("Vidéo conservée dans la médiathèque. Le lecteur vidéo Live reste à intégrer.");
+        ScheduleAutosave();
+    }
+
+    private void OnSetMediaBackgroundClicked(object? sender, EventArgs e)
+    {
+        if (_selectedMedia is null || _selectedMedia.Kind != "Image" || SelectedSlide is not Slide slide)
+        {
+            SetStatus("Sélectionnez une image et une diapositive pour définir l'arrière-plan.");
+            return;
+        }
+
+        slide.BackgroundPath = _selectedMedia.Path;
+        UpdatePreview();
+        SetStatus("Arrière-plan image appliqué à la diapositive.");
+        ScheduleAutosave();
+    }
+
+    private void OnSetSlideAudioClicked(object? sender, EventArgs e)
+    {
+        if (_selectedMedia is null || _selectedMedia.Kind != "Audio" || SelectedSlide is not Slide slide)
+        {
+            SetStatus("Sélectionnez un fichier audio et une diapositive.");
+            return;
+        }
+
+        slide.BackgroundAudioPath = _selectedMedia.Path;
+        SetStatus("Piste audio associée à la diapositive. Elle est conservée avec le projet local.");
+        ScheduleAutosave();
+    }
+
+    private async void OnOpenMediaClicked(object? sender, EventArgs e)
+    {
+        if (_selectedMedia is null || !File.Exists(_selectedMedia.Path))
+        {
+            SetStatus("Sélectionnez un média existant.");
+            return;
+        }
+
+        try
+        {
+            await Launcher.Default.OpenAsync(new OpenFileRequest("Ouvrir le média", new ReadOnlyFile(_selectedMedia.Path)));
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Ouverture du média impossible : " + ex.Message);
+        }
+    }
+
+    private void ApplyMediaBackgroundColor(string color)
+    {
+        if (SelectedSlide is not Slide slide)
+        {
+            SetStatus("Sélectionnez une diapositive.");
+            return;
+        }
+
+        slide.BackgroundColor = color;
+        slide.BackgroundPath = null;
+        UpdatePreview();
+        SetStatus("Couleur d'arrière-plan appliquée.");
+        ScheduleAutosave();
+    }
+
+    private void OnMediaBackgroundNightClicked(object? sender, EventArgs e) => ApplyMediaBackgroundColor("#111827");
+    private void OnMediaBackgroundBurgundyClicked(object? sender, EventArgs e) => ApplyMediaBackgroundColor("#5B1D35");
+    private void OnMediaBackgroundForestClicked(object? sender, EventArgs e) => ApplyMediaBackgroundColor("#164E3B");
+    private void OnMediaBackgroundLightClicked(object? sender, EventArgs e) => ApplyMediaBackgroundColor("#F1F5F9");
+
+    private void OnApplyTransitionClicked(object? sender, EventArgs e)
+    {
+        if (SelectedSlide is not Slide slide)
+        {
+            SetStatus("Sélectionnez une diapositive.");
+            return;
+        }
+
+        slide.Transition = TransitionPicker.SelectedItem?.ToString() ?? "Fondu";
+        SetStatus("Transition enregistrée : " + slide.Transition);
         ScheduleAutosave();
     }
 
