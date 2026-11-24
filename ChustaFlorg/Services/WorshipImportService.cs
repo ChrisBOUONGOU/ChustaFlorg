@@ -13,7 +13,7 @@ public sealed class WorshipImportService
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
         if (ext == ".json")
             return await JsonSerializer.DeserializeAsync<List<WorshipSong>>(stream, Options, token) ?? [];
-        using var reader = new StreamReader(stream, Encoding.UTF8, true, leaveOpen: true);
+        using var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, leaveOpen: true);
         var text = await reader.ReadToEndAsync(token);
         return ext switch { ".csv" => ParseCsv(text), ".txt" => ParseText(text), _ => throw new NotSupportedException("Formats acceptés : JSON, CSV et TXT.") };
     }
