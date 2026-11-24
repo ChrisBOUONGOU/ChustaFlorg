@@ -207,7 +207,7 @@
                     <Border x:Name="ReliabilityPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <ScrollView>
                             <VerticalStackLayout Spacing="11">
-                                <Label Text="FIABILITÉ & DIAGNOSTICS" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                                <Label Text="FIABILITÉ &amp; DIAGNOSTICS" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
                                 <Label Text="ÉTAT DE L'APPLICATION" TextColor="#94A3B8" FontSize="9" FontAttributes="Bold"/>
                                 <Label x:Name="ReliabilityStatusLabel" Text="Diagnostic non exécuté" TextColor="#86EFAC" FontSize="11" LineBreakMode="WordWrap"/>
                                 <Button Text="Lancer le diagnostic" Clicked="OnRunDiagnosticsClicked" BackgroundColor="#263246" TextColor="White" FontSize="11"/>
