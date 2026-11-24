@@ -250,6 +250,91 @@ public partial class MainPage : ContentPage
         }
     }
 
+
+    private void ShowRightPanel(string panel)
+    {
+        InspectorPanel.IsVisible = panel == "Properties";
+        MediaPanel.IsVisible = panel == "Media";
+        ThemePanel.IsVisible = panel == "Themes";
+        ApplicationThemePanel.IsVisible = panel == "ApplicationTheme";
+    }
+
+    private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
+    private void OnToolMediaClicked(object? sender, EventArgs e) => ShowRightPanel("Media");
+    private void OnToolThemesClicked(object? sender, EventArgs e) => ShowRightPanel("Themes");
+    private void OnToolApplicationThemeClicked(object? sender, EventArgs e) => ShowRightPanel("ApplicationTheme");
+
+    private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
+
+    private void ApplySlideTheme(string background, string foreground)
+    {
+        if (SelectedSlide is not Slide slide)
+        {
+            SetStatus("Sélectionnez une diapositive avant de choisir un thème.");
+            return;
+        }
+
+        slide.BackgroundColor = background;
+        slide.TextColor = foreground;
+        SetStatus("Thème appliqué à la diapositive sélectionnée.");
+        ScheduleAutosave();
+    }
+
+    private void OnThemeNightClicked(object? sender, EventArgs e) => ApplySlideTheme("#111827", "#FFFFFF");
+    private void OnThemeBurgundyClicked(object? sender, EventArgs e) => ApplySlideTheme("#5B1D35", "#FFFFFF");
+    private void OnThemeForestClicked(object? sender, EventArgs e) => ApplySlideTheme("#164E3B", "#FFFFFF");
+    private void OnThemeLightClicked(object? sender, EventArgs e) => ApplySlideTheme("#F1F5F9", "#111827");
+
+    private void OnDarkAppearanceClicked(object? sender, EventArgs e)
+    {
+        BackgroundColor = Color.FromArgb("#0B0F17");
+        SetStatus("Mode sombre activé.");
+    }
+
+    private void OnLightAppearanceClicked(object? sender, EventArgs e)
+    {
+        BackgroundColor = Color.FromArgb("#E2E8F0");
+        SetStatus("Mode clair activé pour l'arrière-plan de l'espace de travail.");
+    }
+
+    private async void OnImportImageClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Choisir une image" });
+            if (file is null) return;
+            if (SelectedSlide is not Slide slide)
+            {
+                SetStatus("Sélectionnez une diapositive avant d'associer une image.");
+                return;
+            }
+
+            slide.BackgroundPath = file.FullPath;
+            MediaStatusLabel.Text = "Image associée : " + file.FileName;
+            SetStatus("Chemin de l'image enregistré sur la diapositive.");
+            ScheduleAutosave();
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Importation de l'image impossible : " + ex.Message);
+        }
+    }
+
+    private async void OnImportVideoClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Choisir une vidéo" });
+            if (file is null) return;
+            MediaStatusLabel.Text = "Vidéo sélectionnée : " + file.FileName;
+            SetStatus("Vidéo sélectionnée. Son affichage dans la sortie Live sera ajouté dans le module média.");
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Importation de la vidéo impossible : " + ex.Message);
+        }
+    }
+
     private async void OnBibleClicked(object? sender, EventArgs e)
     {
         var page = new BiblePage(slides =>
