@@ -19,6 +19,8 @@
                 </VerticalStackLayout>
             </HorizontalStackLayout>
             <HorizontalStackLayout Grid.Column="1" Spacing="7" VerticalOptions="Center">
+                <Button Text="♫ Worship" Clicked="OnWorshipClicked" Padding="12,8"
+                        BackgroundColor="#263246" TextColor="#D8B46A" FontSize="12" FontAttributes="Bold"/>
                 <Button Text="Ouvrir" Clicked="OnOpenClicked" Padding="12,8"
                         BackgroundColor="#202C40" TextColor="White" FontSize="12"/>
                 <Button Text="Enregistrer" Clicked="OnSaveClicked" Padding="12,8"
