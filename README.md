@@ -25,18 +25,20 @@ The MAUI application currently provides an initial presentation workspace with:
 - A Worship song library with local JSON persistence, search across titles/authors/tags/lyrics, metadata (key and BPM), and editable sections (intro, verses, pre-chorus, chorus, bridge, final and outro).
 - One-click conversion of song sections into slides, preserving their sequence and appending them to the service playlist.
 
-This is an early MVP foundation, not a finished replacement for the three products. Cloud sync, song arrangements, bulk import/export and chord charts are not yet implemented. Selecting a specific physical output display, stage/audience screen separation and production-grade media playback remain future work.
+This is an early MVP foundation, not a finished replacement for the three products. WebDAV sync requires an existing HTTPS WebDAV endpoint (for example, a Nextcloud app-password URL) configured on each device. Synchronization currently merges by song ID and last-modified timestamp; deletions are not propagated and simultaneous syncs from multiple devices should be avoided. Selecting a specific physical output display, stage/audience screen separation and production-grade media playback remain future work.
 
 ## Roadmap
 
 1. **Reliability:** project backups, integrity checks, crash diagnostics and recovery testing.
-2. **Worship library (first MVP delivered):** local song catalog, metadata, verse/chorus/bridge structure, tags, lyrics search and add-to-service flow. Next: arrangements, duplicate detection, import/export and chord sheets.
+2. **Worship library (first MVP delivered):** local song catalog, metadata, verse/chorus/bridge structure, tags, lyrics search and add-to-service flow. Advanced Worship tools: alternate arrangements, import/export, duplicate detection, chord sheets, transposition and WebDAV sync are now in the MVP.
 3. **Bible module:** translations with appropriate distribution rights, offline availability, bookmarks and notes.
 4. **Media engine:** image/video/audio playback, backgrounds, transition controls and missing-file repair.
 5. **Live production:** explicit display selection, audience/stage outputs, next-slide confidence monitor and blackout.
 6. **Remote control:** secure local-network pairing for phones and tablets, with connection status and fallback controls.
 7. **Interoperability:** import/export for documented and legally supported formats.
 8. **Volunteer mode:** guided setup, simple mode, keyboard shortcuts and contextual help.
+
+See [Worship module guide](docs/WORSHIP.md) for import formats, chord notation and WebDAV setup.
 
 ## Technology
 
