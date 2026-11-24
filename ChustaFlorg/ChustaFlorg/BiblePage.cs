@@ -34,7 +34,7 @@ public sealed class BiblePage : ContentPage
         BackgroundColor = Color.FromArgb("#0B0F17");
         Padding = new Thickness(16, 10);
         _translationPicker.ItemsSource = _bible.GetTranslations().ToList();
-        _translationPicker.ItemDisplayBinding = new Binding(nameof(BibleTranslation.ToString));
+        _translationPicker.ItemDisplayBinding = new Binding(nameof(BibleTranslation.Name));
         _bookPicker.ItemDisplayBinding = new Binding(nameof(BibleBook.Name));
         _verses.ItemsSource = _verseItems;
         _verses.ItemTemplate = VerseTemplate();
@@ -72,7 +72,7 @@ public sealed class BiblePage : ContentPage
                 _noteEditor,
                 _bookmarksView,
                 _status,
-                ActionButton("Fermer", async () => await Navigation.PopModalAsync())
+                ActionButton("Fermer", async () => { await Navigation.PopModalAsync(); })
             }
         }};
         _translationPicker.SelectedIndexChanged += OnTranslationChanged;
@@ -116,6 +116,7 @@ public sealed class BiblePage : ContentPage
 
     private async void OnTranslationChanged(object? sender, EventArgs e)
     {
+        if (_loading) return;
         if (_translationPicker.SelectedItem is not BibleTranslation translation) return;
         _translation = translation;
         _bookPicker.ItemsSource = null;
@@ -222,12 +223,14 @@ public sealed class BiblePage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not BibleBookmark bookmark) return;
         var translation = _bible.GetTranslations().FirstOrDefault(x => x.Id == bookmark.TranslationId);
         if (translation is null) { _status.Text = "Traduction du favori indisponible."; return; }
+        _loading = true;
         _translationPicker.SelectedItem = translation;
         _translation = translation;
         var books = await _bible.GetBooksAsync(translation);
         _bookPicker.ItemsSource = books.ToList();
         _book = books.FirstOrDefault(x => x.Id == bookmark.BookId);
         _bookPicker.SelectedItem = _book;
+        _loading = false;
         if (_book is null) return;
         _chapterEntry.Text = bookmark.Chapter.ToString();
         await LoadChapterAsync();
@@ -236,14 +239,14 @@ public sealed class BiblePage : ContentPage
         _noteEditor.Text = bookmark.Note;
     }
 
-    private async void OnAddVerseClicked()
+    private void OnAddVerseClicked()
     {
         if (_selectedVerse is null) { _status.Text = "Sélectionnez un verset."; return; }
         _addSlides([new Slide { Title = _selectedVerse.Reference, Body = _selectedVerse.Text, BackgroundColor = "#111827", TextColor = "#FFFFFF" }]);
         _status.Text = "Verset ajouté à la présentation.";
     }
 
-    private async void OnAddChapterClicked()
+    private void OnAddChapterClicked()
     {
         if (_chapter is null) { _status.Text = "Chargez d'abord un chapitre."; return; }
         var slides = _chapter.Verses.Select(v => new Slide { Title = v.Reference, Body = v.Text, BackgroundColor = "#111827", TextColor = "#FFFFFF" }).ToList();
