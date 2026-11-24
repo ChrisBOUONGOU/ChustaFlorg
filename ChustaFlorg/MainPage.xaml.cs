@@ -192,7 +192,7 @@ public partial class MainPage : ContentPage
             for (var row = 0; row < 8; row++)
                 ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton };
+            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton };
             for (var i = 0; i < toolButtons.Length; i++)
             {
                 Grid.SetRow(toolButtons[i], i);
