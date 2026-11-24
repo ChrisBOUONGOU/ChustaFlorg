@@ -40,6 +40,18 @@ public sealed class WorshipPage : ContentView
     private readonly Color _field = Color.FromArgb("#1A2435");
     private readonly Color _gold = Color.FromArgb("#D8B46A");
 
+    // ContentView n’hérite pas de Page : les boîtes de dialogue sont affichées par la page hôte.
+    private Page? HostPage => Application.Current?.Windows.FirstOrDefault()?.Page;
+
+    private Task ShowAlertAsync(string title, string message, string accept)
+        => HostPage?.DisplayAlert(title, message, accept) ?? Task.CompletedTask;
+
+    private Task<bool> ShowAlertAsync(string title, string message, string accept, string cancel)
+        => HostPage?.DisplayAlert(title, message, accept, cancel) ?? Task.FromResult(false);
+
+    private Task<string?> ShowPromptAsync(string title, string message)
+        => HostPage?.DisplayPromptAsync(title, message) ?? Task.FromResult<string?>(null);
+
     public WorshipPage(Action<IReadOnlyList<Slide>> addToPresentation)
     {
         _addToPresentation = addToPresentation;
@@ -370,7 +382,7 @@ public sealed class WorshipPage : ContentView
     private async Task DeleteSongAsync()
     {
         if (_selectedSong is null) return;
-        var confirm = await DisplayAlert("Supprimer le chant", $"Supprimer « {_selectedSong.Title} » ?", "Supprimer", "Annuler");
+        var confirm = await ShowAlertAsync("Supprimer le chant", $"Supprimer « {_selectedSong.Title} » ?", "Supprimer", "Annuler");
         if (!confirm) return;
         _songs.Remove(_selectedSong);
         _selectedSong = null;
@@ -406,7 +418,6 @@ public sealed class WorshipPage : ContentView
         _addToPresentation(slides);
         _status.Text = $"{slides.Count} diapositive(s) ajoutée(s) au plan du culte.";
         await DisplayAlert("Chant ajouté", $"{slides.Count} diapositive(s) ont été ajoutées à la fin de votre présentation.", "OK");
-        await Navigation.PopModalAsync();
     }
 
 
@@ -455,7 +466,7 @@ public sealed class WorshipPage : ContentView
     private async Task CreateArrangementAsync()
     {
         if (_selectedSong is null) { _status.Text = "Sélectionnez un chant."; return; }
-        var name = await DisplayPromptAsync("Nouvel arrangement", "Nom de cette version (ex. Culte du dimanche)");
+        var name = await ShowPromptAsync("Nouvel arrangement", "Nom de cette version (ex. Culte du dimanche)");
         if (string.IsNullOrWhiteSpace(name)) return;
         if (_selectedSong.Arrangements.Any(x => string.Equals(x.Name, name.Trim(), StringComparison.OrdinalIgnoreCase)))
         {
@@ -614,14 +625,15 @@ public sealed class WorshipPage : ContentView
                     {
                         Children =
                         {
-                            new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await Navigation.PopModalAsync(); }) },
+                            new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await passwordPage.Navigation.PopModalAsync(); }) },
                             new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await Navigation.PopModalAsync(); }) }
                         }
                     }
                 }
             }
         };
-        await Navigation.PushModalAsync(new NavigationPage(passwordPage));
+        if (HostPage is null) return;
+        await HostPage.Navigation.PushModalAsync(new NavigationPage(passwordPage));
         passwordPage.Disappearing += (_, _) => completion.TrySetResult(null);
         var password = await completion.Task;
         if (password is null) return;
