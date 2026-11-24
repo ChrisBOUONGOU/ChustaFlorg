@@ -581,7 +581,7 @@ public partial class MainPage : ContentPage
             await _remoteServer.StartAsync();
             _remoteBaseUrl = _remoteServer.BaseUrl;
             _remotePin = _remoteServer.Pin;
-            RemoteHostAddressLabel.Text = "Adresse : " + _remoteServer.LocalAddress;
+            RemoteHostAddressLabel.Text = "Adresse : " + _remoteServer.BaseUrl;
             RemotePinLabel.Text = "Code PIN : " + _remotePin;
             RemoteConnectionStatusLabel.Text = "Serveur actif · En attente du téléphone";
             SetStatus("Télécommande activée sur le réseau local.");
