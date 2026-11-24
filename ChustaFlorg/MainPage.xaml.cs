@@ -84,21 +84,21 @@ public partial class MainPage : ContentPage
             Grid.SetRow(PlaylistPanel, 0);
             Grid.SetColumn(PreviewPanel, 0);
             Grid.SetRow(PreviewPanel, 1);
-            Grid.SetColumn(InspectorPanel, 0);
-            Grid.SetRow(InspectorPanel, 2);
+            Grid.SetColumn(RightToolsPanel, 0);
+            Grid.SetRow(RightToolsPanel, 2);
         }
         else
         {
             Workspace.RowDefinitions.Add(new RowDefinition(GridLength.Star));
             Workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(220)));
             Workspace.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            Workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(280)));
+            Workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(340)));
             Grid.SetRow(PlaylistPanel, 0);
             Grid.SetColumn(PlaylistPanel, 0);
             Grid.SetRow(PreviewPanel, 0);
             Grid.SetColumn(PreviewPanel, 1);
-            Grid.SetRow(InspectorPanel, 0);
-            Grid.SetColumn(InspectorPanel, 2);
+            Grid.SetRow(RightToolsPanel, 0);
+            Grid.SetColumn(RightToolsPanel, 2);
         }
     }
 
