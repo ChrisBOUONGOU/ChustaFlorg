@@ -9,4 +9,6 @@ public sealed class Slide
     public string BackgroundColor { get; set; } = "#111827";
     public string TextColor { get; set; } = "#FFFFFF";
     public int DurationSeconds { get; set; }
+    public string? BackgroundAudioPath { get; set; }
+    public string Transition { get; set; } = "Fondu";
 }
