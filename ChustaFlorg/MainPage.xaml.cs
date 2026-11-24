@@ -24,6 +24,11 @@ public partial class MainPage : ContentPage
     private bool? _compactLayout;
     private int _selectedIndex;
     private CancellationTokenSource? _autosaveCts;
+    private LiveProductionSession? _activeSession;
+    private RemoteControlService? _remoteServer;
+    private string? _remoteBaseUrl;
+    private string? _remotePin;
+    private readonly HttpClient _remoteHttp = new() { Timeout = TimeSpan.FromSeconds(3) };
 
     public MainPage()
     {
@@ -277,6 +282,7 @@ public partial class MainPage : ContentPage
         ApplicationThemePanel.IsVisible = panel == "ApplicationTheme";
         LyricsPanel.IsVisible = panel == "Lyrics";
         BiblePanel.IsVisible = panel == "Bible";
+        RemotePanel.IsVisible = panel == "Remote";
     }
 
     private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
@@ -285,6 +291,7 @@ public partial class MainPage : ContentPage
     private void OnToolApplicationThemeClicked(object? sender, EventArgs e) => ShowRightPanel("ApplicationTheme");
     private void OnToolLyricsClicked(object? sender, EventArgs e) => ShowRightPanel("Lyrics");
     private void OnToolBibleClicked(object? sender, EventArgs e) => ShowRightPanel("Bible");
+    private void OnToolRemoteClicked(object? sender, EventArgs e) => ShowRightPanel("Remote");
 
     private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
 
@@ -499,7 +506,8 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        var session = new LiveProductionSession(_slides.ToList(), _selectedIndex);
+        var session = _activeSession ?? new LiveProductionSession(_slides.ToList(), _selectedIndex);
+        _activeSession = session;
 #if WINDOWS
         var app = Application.Current;
         if (app is null)
@@ -554,6 +562,110 @@ public partial class MainPage : ContentPage
         {
             SetStatus("Sauvegarde automatique impossible : " + ex.Message);
         }
+    }
+
+
+    private async void OnStartRemoteHostClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (_remoteServer is not null)
+            {
+                RemoteConnectionStatusLabel.Text = "Serveur déjà actif.";
+                return;
+            }
+
+            _activeSession ??= new LiveProductionSession(_slides.ToList(), _selectedIndex);
+            _remoteServer = new RemoteControlService(_activeSession);
+            await _remoteServer.StartAsync();
+            _remoteBaseUrl = _remoteServer.BaseUrl;
+            _remotePin = _remoteServer.Pin;
+            RemoteHostAddressLabel.Text = "Adresse : " + _remoteServer.LocalAddress;
+            RemotePinLabel.Text = "Code PIN : " + _remotePin;
+            RemoteConnectionStatusLabel.Text = "Serveur actif · En attente du téléphone";
+            SetStatus("Télécommande activée sur le réseau local.");
+        }
+        catch (Exception ex)
+        {
+            _remoteServer = null;
+            RemoteConnectionStatusLabel.Text = "Démarrage impossible : " + ex.Message;
+        }
+    }
+
+    private async void OnStopRemoteHostClicked(object? sender, EventArgs e)
+    {
+        if (_remoteServer is not null)
+        {
+            await _remoteServer.DisposeAsync();
+            _remoteServer = null;
+        }
+        RemoteHostAddressLabel.Text = "Serveur arrêté";
+        RemotePinLabel.Text = "Code PIN : —";
+        RemoteConnectionStatusLabel.Text = "Serveur arrêté";
+    }
+
+    private async void OnConnectRemoteClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            var address = RemoteAddressEntry.Text?.Trim().TrimEnd('/');
+            var pin = RemotePinEntry.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(address) || !Uri.TryCreate(address, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) || string.IsNullOrWhiteSpace(pin))
+            {
+                RemoteConnectionStatusLabel.Text = "Adresse ou code PIN invalide.";
+                return;
+            }
+
+            var response = await _remoteHttp.GetStringAsync($"{address}/status?pin={Uri.EscapeDataString(pin)}");
+            using var json = System.Text.Json.JsonDocument.Parse(response);
+            if (!json.RootElement.TryGetProperty("ok", out var ok) || !ok.GetBoolean())
+                throw new InvalidOperationException("Code PIN incorrect.");
+            _remoteBaseUrl = address;
+            _remotePin = pin;
+            var current = json.RootElement.GetProperty("index").GetInt32() + 1;
+            var count = json.RootElement.GetProperty("count").GetInt32();
+            RemoteSlideStatusLabel.Text = $"Diapositive {current} / {count}";
+            RemoteConnectionStatusLabel.Text = "Connecté à l'ordinateur hôte.";
+        }
+        catch (Exception ex)
+        {
+            _remoteBaseUrl = null;
+            _remotePin = null;
+            RemoteConnectionStatusLabel.Text = "Connexion impossible : " + ex.Message;
+        }
+    }
+
+    private async Task SendRemoteCommandAsync(string command)
+    {
+        if (string.IsNullOrWhiteSpace(_remoteBaseUrl) || string.IsNullOrWhiteSpace(_remotePin))
+        {
+            RemoteConnectionStatusLabel.Text = "Connectez-vous d'abord à l'ordinateur hôte.";
+            return;
+        }
+        try
+        {
+            var url = $"{_remoteBaseUrl}/{command}?pin={Uri.EscapeDataString(_remotePin)}";
+            var response = await _remoteHttp.GetStringAsync(url);
+            using var json = System.Text.Json.JsonDocument.Parse(response);
+            var root = json.RootElement;
+            if (!root.GetProperty("ok").GetBoolean()) throw new InvalidOperationException("Commande refusée.");
+            RemoteSlideStatusLabel.Text = $"Diapositive {root.GetProperty("index").GetInt32() + 1} / {root.GetProperty("count").GetInt32()}";
+            RemoteConnectionStatusLabel.Text = "Télécommande connectée.";
+        }
+        catch (Exception ex)
+        {
+            RemoteConnectionStatusLabel.Text = "Connexion perdue : " + ex.Message;
+        }
+    }
+
+    private async void OnRemotePreviousClicked(object? sender, EventArgs e) => await SendRemoteCommandAsync("previous");
+    private async void OnRemoteNextClicked(object? sender, EventArgs e) => await SendRemoteCommandAsync("next");
+
+    protected override void OnDisappearing()
+    {
+        _remoteHttp.Dispose();
+        base.OnDisappearing();
     }
 
     private void SetStatus(string message) => StatusLabel.Text = message;
