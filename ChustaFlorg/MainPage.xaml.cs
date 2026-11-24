@@ -257,12 +257,16 @@ public partial class MainPage : ContentPage
         MediaPanel.IsVisible = panel == "Media";
         ThemePanel.IsVisible = panel == "Themes";
         ApplicationThemePanel.IsVisible = panel == "ApplicationTheme";
+        LyricsPanel.IsVisible = panel == "Lyrics";
+        BiblePanel.IsVisible = panel == "Bible";
     }
 
     private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
     private void OnToolMediaClicked(object? sender, EventArgs e) => ShowRightPanel("Media");
     private void OnToolThemesClicked(object? sender, EventArgs e) => ShowRightPanel("Themes");
     private void OnToolApplicationThemeClicked(object? sender, EventArgs e) => ShowRightPanel("ApplicationTheme");
+    private void OnToolLyricsClicked(object? sender, EventArgs e) => ShowRightPanel("Lyrics");
+    private void OnToolBibleClicked(object? sender, EventArgs e) => ShowRightPanel("Bible");
 
     private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
 
