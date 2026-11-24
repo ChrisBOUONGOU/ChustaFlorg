@@ -7,7 +7,7 @@ using Microsoft.Maui.Storage;
 
 namespace ChustaFlorg;
 
-public sealed class WorshipPage : ContentPage
+public sealed class WorshipPage : ContentView
 {
     private readonly ObservableCollection<WorshipSong> _songs = [];
     private readonly WorshipLibraryService _library = new();
@@ -43,7 +43,6 @@ public sealed class WorshipPage : ContentPage
     public WorshipPage(Action<IReadOnlyList<Slide>> addToPresentation)
     {
         _addToPresentation = addToPresentation;
-        Title = "Worship · Bibliothèque de chants";
         BackgroundColor = Color.FromArgb("#0B0F17");
         BuildInterface();
         _ = LoadLibraryAsync();
@@ -123,19 +122,6 @@ public sealed class WorshipPage : ContentPage
             }
         };
 
-        var header = new Grid { Padding = new Thickness(16, 12), BackgroundColor = _panel, ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
-        header.Add(new VerticalStackLayout
-        {
-            Spacing = 2,
-            Children =
-            {
-                new Label { Text = "WORSHIP", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold, CharacterSpacing = 2 },
-                new Label { Text = "Bibliothèque de chants", TextColor = Colors.White, FontSize = 20, FontAttributes = FontAttributes.Bold }
-            }
-        });
-        var close = MakeButton("Fermer", "#263246", () => Navigation.PopModalAsync());
-        header.Add(close, 1);
-
         var libraryPane = new VerticalStackLayout { Spacing = 9, Padding = 12, BackgroundColor = _panel };
         libraryPane.Children.Add(new Label { Text = "MES CHANTS", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
         libraryPane.Children.Add(_search);
@@ -211,39 +197,19 @@ public sealed class WorshipPage : ContentPage
         editorPane.Children.Add(MakeButton("Ajouter le chant à la présentation →", "#7A1F3D", AddSongToPresentationAsync));
         editorPane.Children.Add(_status);
 
-        var workspace = new Grid { Padding = 12, ColumnSpacing = 12, RowSpacing = 12 };
-        workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(0.9, GridUnitType.Star)));
-        workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1.4, GridUnitType.Star)));
-        workspace.Add(libraryPane, 0, 0);
-        workspace.Add(new ScrollView { Content = editorPane }, 1, 0);
-
-        var root = new Grid { RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) } };
-        root.Add(header, 0, 0);
-        root.Add(new ScrollView { Content = workspace }, 0, 1);
-        Content = root;
-
-        SizeChanged += (_, _) =>
+        var root = new Grid
         {
-            var compact = Width < 760;
-            workspace.ColumnDefinitions.Clear();
-            workspace.RowDefinitions.Clear();
-            if (compact)
+            Padding = 4,
+            RowSpacing = 8,
+            RowDefinitions =
             {
-                workspace.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-                workspace.RowDefinitions.Add(new RowDefinition(new GridLength(320)));
-                workspace.RowDefinitions.Add(new RowDefinition(new GridLength(650)));
-                Grid.SetColumn(libraryPane, 0); Grid.SetRow(libraryPane, 0);
-                Grid.SetColumn(editorPane, 0); Grid.SetRow(editorPane, 1);
-            }
-            else
-            {
-                workspace.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-                workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(0.9, GridUnitType.Star)));
-                workspace.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1.4, GridUnitType.Star)));
-                Grid.SetColumn(libraryPane, 0); Grid.SetRow(libraryPane, 0);
-                Grid.SetColumn(editorPane, 1); Grid.SetRow(editorPane, 0);
+                new RowDefinition(new GridLength(225)),
+                new RowDefinition(GridLength.Star)
             }
         };
+        root.Add(new ScrollView { Content = libraryPane }, 0, 0);
+        root.Add(new ScrollView { Content = editorPane }, 0, 1);
+        Content = root;
     }
 
     private Button MakeButton(string text, string color, Func<Task> action)
