@@ -32,19 +32,30 @@ public sealed class ReliabilityService
         PruneBackups(10);
     }
 
-    public async Task<string?> RestoreLatestBackupAsync(string destinationPath, CancellationToken cancellationToken = default)
-    {
-        var latest = Directory.Exists(BackupDirectory)
+    public string? GetLatestBackupPath() =>
+        Directory.Exists(BackupDirectory)
             ? Directory.EnumerateFiles(BackupDirectory, "*.chustaflorg.bak")
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .FirstOrDefault()
             : null;
 
+    public async Task<string?> RestoreLatestBackupAsync(string destinationPath, CancellationToken cancellationToken = default)
+    {
+        var latest = GetLatestBackupPath();
         if (latest is null)
             return null;
 
+        await RestoreBackupAsync(latest, destinationPath, cancellationToken);
+        return latest;
+    }
+
+    public async Task RestoreBackupAsync(string backupPath, string destinationPath, CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(backupPath))
+            throw new FileNotFoundException("La sauvegarde sélectionnée est introuvable.", backupPath);
+
         var temporaryPath = destinationPath + ".restore.tmp";
-        await using (var source = new FileStream(latest, FileMode.Open, FileAccess.Read, FileShare.Read))
+        await using (var source = new FileStream(backupPath, FileMode.Open, FileAccess.Read, FileShare.Read))
         await using (var target = new FileStream(temporaryPath, FileMode.Create, FileAccess.Write, FileShare.None))
         {
             await source.CopyToAsync(target, cancellationToken);
@@ -52,7 +63,6 @@ public sealed class ReliabilityService
         }
 
         File.Move(temporaryPath, destinationPath, overwrite: true);
-        return latest;
     }
 
     public int GetBackupCount() =>
