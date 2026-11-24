@@ -210,6 +210,7 @@ public partial class MainPage : ContentPage
         var bounded = Math.Clamp(index, 0, _slides.Count - 1);
         SlidesList.SelectedItem = _slides[bounded];
         _selectedIndex = bounded;
+        _activeSession?.GoTo(bounded);
         UpdatePreview();
     }
 
@@ -661,12 +662,6 @@ public partial class MainPage : ContentPage
 
     private async void OnRemotePreviousClicked(object? sender, EventArgs e) => await SendRemoteCommandAsync("previous");
     private async void OnRemoteNextClicked(object? sender, EventArgs e) => await SendRemoteCommandAsync("next");
-
-    protected override void OnDisappearing()
-    {
-        _remoteHttp.Dispose();
-        base.OnDisappearing();
-    }
 
     private void SetStatus(string message) => StatusLabel.Text = message;
 }
