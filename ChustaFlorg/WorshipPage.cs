@@ -646,6 +646,7 @@ public sealed class WorshipPage : ContentPage
             }
         };
         await Navigation.PushModalAsync(new NavigationPage(passwordPage));
+        passwordPage.Disappearing += (_, _) => completion.TrySetResult(null);
         var password = await completion.Task;
         if (password is null) return;
         await _sync.ConfigureAsync(url, username, password);
@@ -666,7 +667,7 @@ public sealed class WorshipPage : ContentPage
             foreach (var song in merged) _songs.Add(song);
             if (_selectedSong is not null)
                 _selectedSong = _songs.FirstOrDefault(x => x.Id == _selectedSong.Id);
-            await SaveLibraryAsync();
+            await _library.SaveAsync(merged);
             FilterSongs();
             _status.Text = $"Synchronisation terminée · {merged.Count} chant(s)";
         }
