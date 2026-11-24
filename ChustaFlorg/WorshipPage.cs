@@ -625,8 +625,8 @@ public sealed class WorshipPage : ContentView
                     {
                         Children =
                         {
-                            new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await passwordPage.Navigation.PopModalAsync(); }) },
-                            new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await passwordPage.Navigation.PopModalAsync(); }) }
+                            new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await (HostPage?.Navigation.PopModalAsync() ?? Task.CompletedTask); }) },
+                            new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await (HostPage?.Navigation.PopModalAsync() ?? Task.CompletedTask); }) }
                         }
                     }
                 }
