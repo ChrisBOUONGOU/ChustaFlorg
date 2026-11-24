@@ -96,18 +96,18 @@
             </Border>
 
             <Grid x:Name="RightToolsPanel" Grid.Column="2" ColumnDefinitions="48,*" ColumnSpacing="0" BackgroundColor="#121A28">
-                <Border Grid.Column="0" BackgroundColor="#0B0F17" Stroke="#263246" StrokeThickness="1" Padding="4" StrokeShape="RoundRectangle 10">
-                    <VerticalStackLayout Spacing="7">
-                        <Button Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
-                        <Button Text="▣" Clicked="OnToolMediaClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
-                        <Button Text="🎨" Clicked="OnToolThemesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
-                        <Button Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
-                        <Button Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
-                        <Button Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
-                        <Button Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
-                    </VerticalStackLayout>
+                <Border x:Name="ToolBarBorder" Grid.Column="0" BackgroundColor="#0B0F17" Stroke="#263246" StrokeThickness="1" Padding="4" StrokeShape="RoundRectangle 10">
+                    <Grid x:Name="ToolBarLayout" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="38" RowSpacing="7">
+                        <Button x:Name="ToolPropertiesButton" Grid.Row="0" Grid.Column="0" Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
+                        <Button x:Name="ToolMediaButton" Grid.Row="1" Grid.Column="0" Text="▣" Clicked="OnToolMediaClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
+                        <Button x:Name="ToolThemesButton" Grid.Row="2" Grid.Column="0" Text="🎨" Clicked="OnToolThemesClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button x:Name="ToolLyricsButton" Grid.Row="3" Grid.Column="0" Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
+                        <Button x:Name="ToolBibleButton" Grid.Row="4" Grid.Column="0" Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button x:Name="ToolAppearanceButton" Grid.Row="5" Grid.Column="0" Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
+                        <Button x:Name="ToolRemoteButton" Grid.Row="6" Grid.Column="0" Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
+                    </Grid>
                 </Border>
-                <Grid Grid.Column="1" Margin="9,0,0,0">
+                <Grid x:Name="RightPanelHost" Grid.Column="1" Margin="9,0,0,0">
                     <Border x:Name="InspectorPanel" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <ScrollView><VerticalStackLayout Spacing="11">
                             <Label Text="PROPRIÉTÉS" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold" CharacterSpacing="1.4"/>
