@@ -23,9 +23,23 @@ public sealed class WorshipImportService
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
         var decomposed = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
         var b = new StringBuilder();
+        var previousWasSeparator = true;
         foreach (var c in decomposed)
-            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark && char.IsLetterOrDigit(c)) b.Append(c);
-        return b.ToString();
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.NonSpacingMark)
+                continue;
+            if (char.IsLetterOrDigit(c))
+            {
+                b.Append(c);
+                previousWasSeparator = false;
+            }
+            else if (!previousWasSeparator)
+            {
+                b.Append(' ');
+                previousWasSeparator = true;
+            }
+        }
+        return b.ToString().Trim();
     }
 
     public static List<(WorshipSong First, WorshipSong Second)> FindDuplicates(IEnumerable<WorshipSong> source)
