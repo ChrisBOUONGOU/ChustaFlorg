@@ -104,6 +104,7 @@
                         <Button Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
                         <Button Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
                         <Button Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
+                        <Button Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
                     </VerticalStackLayout>
                 </Border>
                 <Grid Grid.Column="1" Margin="9,0,0,0">
@@ -174,6 +175,28 @@
                     </Border>
                     <Border x:Name="LyricsPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="WorshipContentHost"/></Border>
                     <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="BibleContentHost"/></Border>
+                    <Border x:Name="RemotePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <ScrollView><VerticalStackLayout Spacing="11">
+                            <Label Text="TÉLÉCOMMANDE À DISTANCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                            <Label Text="ORDINATEUR HÔTE" TextColor="#94A3B8" FontSize="9" FontAttributes="Bold"/>
+                            <Button Text="Démarrer le serveur de télécommande" Clicked="OnStartRemoteHostClicked" BackgroundColor="#7A1F3D" TextColor="White" FontSize="11"/>
+                            <Label x:Name="RemoteHostAddressLabel" Text="Serveur arrêté" TextColor="#86EFAC" FontSize="12"/>
+                            <Label x:Name="RemotePinLabel" Text="Code : —" TextColor="#D8B46A" FontSize="15" FontAttributes="Bold"/>
+                            <Button Text="Arrêter le serveur" Clicked="OnStopRemoteHostClicked" BackgroundColor="#30202A" TextColor="#FCA5A5" FontSize="11"/>
+                            <BoxView HeightRequest="1" Color="#334155"/>
+                            <Label Text="CONNECTER CE TÉLÉPHONE / CETTE TABLETTE" TextColor="#D8B46A" FontSize="9" FontAttributes="Bold"/>
+                            <Entry x:Name="RemoteAddressEntry" Placeholder="Adresse de l'ordinateur (ex. 192.168.1.20)" Text="http://" TextColor="White" PlaceholderColor="#64748B" BackgroundColor="#1A2435"/>
+                            <Entry x:Name="RemotePinEntry" Placeholder="Code PIN à 6 chiffres" Keyboard="Numeric" MaxLength="6" TextColor="White" PlaceholderColor="#64748B" BackgroundColor="#1A2435"/>
+                            <Button Text="Se connecter" Clicked="OnConnectRemoteClicked" BackgroundColor="#263246" TextColor="White" FontSize="11"/>
+                            <Label x:Name="RemoteConnectionStatusLabel" Text="Non connecté" TextColor="#94A3B8" FontSize="10"/>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Text="◀ PRÉCÉDENTE" Clicked="OnRemotePreviousClicked" BackgroundColor="#263246" TextColor="White" FontSize="12" HeightRequest="58"/>
+                                <Button Grid.Column="1" Text="SUIVANTE ▶" Clicked="OnRemoteNextClicked" BackgroundColor="#7A1F3D" TextColor="White" FontSize="12" HeightRequest="58"/>
+                            </Grid>
+                            <Label x:Name="RemoteSlideStatusLabel" Text="Aucune présentation distante" TextColor="#D8B46A" FontSize="11"/>
+                            <Label Text="Les appareils doivent être connectés au même réseau Wi-Fi. Saisissez l'adresse IP et le code affichés sur l'ordinateur hôte." TextColor="#94A3B8" FontSize="10"/>
+                        </VerticalStackLayout></ScrollView>
+                    </Border>
                     <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <VerticalStackLayout Spacing="10"><Label Text="APPARENCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
                             <Button Text="Mode sombre" Clicked="OnDarkAppearanceClicked" BackgroundColor="#263246" TextColor="White"/>
