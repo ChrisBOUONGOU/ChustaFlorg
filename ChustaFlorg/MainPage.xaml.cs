@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using ChustaFlorg.Models;
 using ChustaFlorg.Services;
 
@@ -7,6 +8,15 @@ namespace ChustaFlorg;
 public partial class MainPage : ContentPage
 {
     private readonly ObservableCollection<Slide> _slides = new();
+    private readonly ObservableCollection<MediaLibraryItem> _mediaAssets = new();
+    private MediaLibraryItem? _selectedMedia;
+    private sealed class MediaLibraryItem
+    {
+        public string Name { get; init; } = string.Empty;
+        public string Path { get; init; } = string.Empty;
+        public string Kind { get; init; } = string.Empty;
+        public string Icon => Kind == "Image" ? "▧" : "▶";
+    }
     private readonly ProjectService _projectService = new();
     private PresentationProject _project = new();
     private bool _loadingEditor;
@@ -22,6 +32,9 @@ public partial class MainPage : ContentPage
             _slides.Add(slide);
 
         SlidesList.ItemsSource = _slides;
+        MediaAssetsView.ItemsSource = _mediaAssets;
+        BibleContentHost.Content = new BiblePage(AddSlidesToPlaylist);
+        LoadMediaLibrary();
         SlidesList.SelectedItem = _slides.FirstOrDefault();
         UpdatePreview();
     }
@@ -301,64 +314,96 @@ public partial class MainPage : ContentPage
         SetStatus("Mode clair activé pour l'arrière-plan de l'espace de travail.");
     }
 
-    private async void OnImportImageClicked(object? sender, EventArgs e)
+    private string MediaDirectory => System.IO.Path.Combine(FileSystem.AppDataDirectory, "MediaLibrary");
+
+    private void LoadMediaLibrary()
+    {
+        Directory.CreateDirectory(MediaDirectory);
+        _mediaAssets.Clear();
+        foreach (var path in Directory.EnumerateFiles(MediaDirectory).OrderBy(p => System.IO.Path.GetFileName(p)))
+        {
+            var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+            var kind = ext is ".mp4" or ".mov" or ".avi" or ".mkv" or ".wmv" ? "Video" : "Image";
+            _mediaAssets.Add(new MediaLibraryItem { Name = System.IO.Path.GetFileName(path), Path = path, Kind = kind });
+        }
+    }
+
+    private void OnMediaSearchChanged(object? sender, TextChangedEventArgs e)
+    {
+        var query = e.NewTextValue?.Trim() ?? string.Empty;
+        MediaAssetsView.ItemsSource = string.IsNullOrEmpty(query) ? _mediaAssets :
+            _mediaAssets.Where(item => item.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private void OnMediaAssetSelected(object? sender, SelectionChangedEventArgs e)
+    {
+        _selectedMedia = e.CurrentSelection.FirstOrDefault() as MediaLibraryItem;
+        MediaStatusLabel.Text = _selectedMedia is null ? "Aucun média sélectionné" : $"{_selectedMedia.Kind} · {_selectedMedia.Name}";
+    }
+
+    private async Task ImportMediaAsync(string kind)
     {
         try
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Choisir une image" });
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = $"Importer {kind.ToLowerInvariant()}" });
             if (file is null) return;
-            if (SelectedSlide is not Slide slide)
-            {
-                SetStatus("Sélectionnez une diapositive avant d'associer une image.");
-                return;
-            }
-
-            slide.BackgroundPath = file.FullPath;
-            MediaStatusLabel.Text = "Image associée : " + file.FileName;
-            SetStatus("Chemin de l'image enregistré sur la diapositive.");
-            ScheduleAutosave();
+            Directory.CreateDirectory(MediaDirectory);
+            var destination = System.IO.Path.Combine(MediaDirectory, $"{Guid.NewGuid():N}_{System.IO.Path.GetFileName(file.FileName)}");
+            await using (var source = await file.OpenReadAsync())
+            await using (var target = File.Create(destination))
+                await source.CopyToAsync(target);
+            LoadMediaLibrary();
+            _selectedMedia = _mediaAssets.FirstOrDefault(item => item.Path == destination);
+            MediaAssetsView.SelectedItem = _selectedMedia;
+            MediaStatusLabel.Text = $"{kind} importé : {file.FileName}";
+            SetStatus("Média ajouté à la médiathèque locale.");
         }
-        catch (Exception ex)
-        {
-            SetStatus("Importation de l'image impossible : " + ex.Message);
-        }
+        catch (Exception ex) { SetStatus("Importation impossible : " + ex.Message); }
     }
 
-    private async void OnImportVideoClicked(object? sender, EventArgs e)
+    private async void OnImportImageClicked(object? sender, EventArgs e) => await ImportMediaAsync("Image");
+    private async void OnImportVideoClicked(object? sender, EventArgs e) => await ImportMediaAsync("Vidéo");
+
+    private void OnInsertMediaClicked(object? sender, EventArgs e)
     {
+        if (_selectedMedia is null || SelectedSlide is not Slide slide) { SetStatus("Sélectionnez un média et une diapositive."); return; }
+        if (_selectedMedia.Kind == "Image")
+        {
+            slide.BackgroundPath = _selectedMedia.Path;
+            SetStatus("Image associée à la diapositive sélectionnée.");
+        }
+        else SetStatus("Vidéo conservée dans la médiathèque. Le lecteur vidéo Live reste à intégrer.");
+        ScheduleAutosave();
+    }
+
+    private void OnDeleteMediaClicked(object? sender, EventArgs e)
+    {
+        if (_selectedMedia is null) return;
         try
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Choisir une vidéo" });
-            if (file is null) return;
-            MediaStatusLabel.Text = "Vidéo sélectionnée : " + file.FileName;
-            SetStatus("Vidéo sélectionnée. Son affichage dans la sortie Live sera ajouté dans le module média.");
+            if (File.Exists(_selectedMedia.Path)) File.Delete(_selectedMedia.Path);
+            _mediaAssets.Remove(_selectedMedia);
+            _selectedMedia = null;
+            MediaAssetsView.SelectedItem = null;
+            MediaStatusLabel.Text = "Média supprimé de la médiathèque.";
         }
-        catch (Exception ex)
-        {
-            SetStatus("Importation de la vidéo impossible : " + ex.Message);
-        }
+        catch (Exception ex) { SetStatus("Suppression impossible : " + ex.Message); }
     }
 
-    private async void OnBibleClicked(object? sender, EventArgs e)
+    private void AddSlidesToPlaylist(IReadOnlyList<Slide> slides)
     {
-        var page = new BiblePage(slides =>
+        foreach (var slide in slides) _slides.Add(slide);
+        if (slides.Count > 0)
         {
-            foreach (var slide in slides)
-                _slides.Add(slide);
-
-            if (slides.Count > 0)
-            {
-                SlidesList.SelectedItem = slides[0];
-                _selectedIndex = _slides.IndexOf(slides[0]);
-                UpdatePreview();
-            }
-
-            SetStatus($"{slides.Count} diapositive(s) biblique(s) ajoutée(s) au plan du culte.");
-            ScheduleAutosave();
-        });
-
-        await Navigation.PushModalAsync(new NavigationPage(page));
+            SlidesList.SelectedItem = slides[0];
+            _selectedIndex = _slides.IndexOf(slides[0]);
+            UpdatePreview();
+        }
+        SetStatus($"{slides.Count} diapositive(s) ajoutée(s) à la présentation.");
+        ScheduleAutosave();
     }
+
+    private void OnBibleClicked(object? sender, EventArgs e) => ShowRightPanel("Bible");
 
     private async void OnWorshipClicked(object? sender, EventArgs e)
     {
