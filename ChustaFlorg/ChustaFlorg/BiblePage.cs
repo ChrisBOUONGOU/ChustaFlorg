@@ -4,7 +4,7 @@ using ChustaFlorg.Services;
 
 namespace ChustaFlorg;
 
-public sealed class BiblePage : ContentPage
+public sealed class BiblePage : ContentView
 {
     private readonly BibleService _bible = new();
     private readonly Action<IReadOnlyList<Slide>> _addSlides;
@@ -30,9 +30,7 @@ public sealed class BiblePage : ContentPage
     public BiblePage(Action<IReadOnlyList<Slide>> addSlides)
     {
         _addSlides = addSlides;
-        Title = "Bible";
-        BackgroundColor = Color.FromArgb("#0B0F17");
-        Padding = new Thickness(16, 10);
+        Padding = new Thickness(4);
         _translationPicker.ItemsSource = _bible.GetTranslations().ToList();
         _translationPicker.ItemDisplayBinding = new Binding(nameof(BibleTranslation.Name));
         _bookPicker.ItemDisplayBinding = new Binding(nameof(BibleBook.Name));
@@ -71,17 +69,16 @@ public sealed class BiblePage : ContentPage
                 new HorizontalStackLayout { Spacing = 8, Children = { ActionButton("☆ Favori", OnFavoriteClicked), ActionButton("Enregistrer la note", OnSaveNoteClicked) } },
                 _noteEditor,
                 _bookmarksView,
-                _status,
-                ActionButton("Fermer", async () => { await Navigation.PopModalAsync(); })
+                _status
             }
         }};
         _translationPicker.SelectedIndexChanged += OnTranslationChanged;
         _bookPicker.SelectedIndexChanged += OnBookChanged;
+        _ = InitializeAsync();
     }
 
-    protected override async void OnAppearing()
+    private async Task InitializeAsync()
     {
-        base.OnAppearing();
         if (_bookmarks.Count > 0) return;
         foreach (var bookmark in await _bible.LoadBookmarksAsync()) _bookmarks.Add(bookmark);
         if (_translationPicker.SelectedIndex < 0 && _translationPicker.ItemsSource is System.Collections.IList translations && translations.Count > 0)
