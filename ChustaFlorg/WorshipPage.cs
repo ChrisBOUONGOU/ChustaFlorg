@@ -88,6 +88,14 @@ public sealed class WorshipPage : ContentPage
         });
         _sections.ItemsSource = _songSections;
         _sections.SelectionChanged += OnSectionSelected;
+        _arrangementList.ItemTemplate = new DataTemplate(() =>
+        {
+            var label = new Label { TextColor = Colors.White, FontSize = 11 };
+            label.SetBinding(Label.TextProperty, nameof(ArrangementEntry.DisplayName));
+            return new Border { BackgroundColor = _field, Stroke = Color.FromArgb("#334155"), Padding = 8,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 6 }, Content = label };
+        });
+        _arrangementList.ItemsSource = _arrangementRows;
 
         _search.TextChanged += (_, _) => FilterSongs();
         _title.TextChanged += (_, _) => UpdateSongMetadata();
@@ -131,6 +139,11 @@ public sealed class WorshipPage : ContentPage
         libraryPane.Children.Add(_search);
         libraryPane.Children.Add(_songList);
         libraryPane.Children.Add(MakeButton("+ Nouveau chant", "#7A1F3D", CreateSongAsync));
+        libraryPane.Children.Add(MakeButton("Importer plusieurs chants", "#263246", ImportSongsAsync));
+        libraryPane.Children.Add(MakeButton("Exporter la bibliothèque", "#263246", ExportSongsAsync));
+        libraryPane.Children.Add(MakeButton("Détecter les doublons", "#263246", DetectDuplicatesAsync));
+        libraryPane.Children.Add(MakeButton("Configurer la synchronisation", "#263246", ConfigureSyncAsync));
+        libraryPane.Children.Add(MakeButton("Synchroniser maintenant", "#7A1F3D", SyncNowAsync));
 
         var editorPane = new VerticalStackLayout { Spacing = 9, Padding = 14, BackgroundColor = _panel };
         editorPane.Children.Add(new Label { Text = "FICHE DU CHANT", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
@@ -139,6 +152,21 @@ public sealed class WorshipPage : ContentPage
         editorPane.Children.Add(_key);
         editorPane.Children.Add(_tempo);
         editorPane.Children.Add(_tags);
+        editorPane.Children.Add(new Label { Text = "ARRANGEMENTS ALTERNATIFS", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
+        editorPane.Children.Add(_arrangementPicker);
+        editorPane.Children.Add(MakeButton("+ Créer un arrangement", "#263246", CreateArrangementAsync));
+        editorPane.Children.Add(_arrangementList);
+        editorPane.Children.Add(new HorizontalStackLayout { Spacing = 6, Children =
+        {
+            MakeButton("Ajouter section active", "#263246", AddSectionToArrangementAsync),
+            MakeButton("Répéter refrain", "#263246", AddChorusToArrangementAsync)
+        }});
+        editorPane.Children.Add(new HorizontalStackLayout { Spacing = 6, Children =
+        {
+            MakeButton("↑", "#263246", () => MoveArrangementEntryAsync(-1)),
+            MakeButton("↓", "#263246", () => MoveArrangementEntryAsync(1)),
+            MakeButton("Retirer", "#40232D", RemoveArrangementEntryAsync)
+        }});
         editorPane.Children.Add(new Label { Text = "STRUCTURE DU CHANT", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
         editorPane.Children.Add(_sections);
         editorPane.Children.Add(_sectionType);
@@ -153,6 +181,20 @@ public sealed class WorshipPage : ContentPage
             }
         });
         editorPane.Children.Add(_lyrics);
+        editorPane.Children.Add(new Label { Text = "ACCORDS MUSICAUX", TextColor = _gold, FontSize = 10, FontAttributes = FontAttributes.Bold });
+        editorPane.Children.Add(_chordLyrics);
+        editorPane.Children.Add(new HorizontalStackLayout { Spacing = 6, Children =
+        {
+            MakeButton("Transpose −", "#263246", () => TransposeChordsAsync(-1)),
+            MakeButton("Transpose +", "#263246", () => TransposeChordsAsync(1)),
+            MakeButton("− 2 demi-tons", "#263246", () => TransposeChordsAsync(-2)),
+            MakeButton("+ 2 demi-tons", "#263246", () => TransposeChordsAsync(2))
+        }});
+        editorPane.Children.Add(new HorizontalStackLayout { Spacing = 8, Children =
+        {
+            new Label { Text = "Inclure les accords dans les diapositives", TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Center, FontSize = 11 },
+            _includeChords
+        }});
         editorPane.Children.Add(new HorizontalStackLayout
         {
             Spacing = 8,
