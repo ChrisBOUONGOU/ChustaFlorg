@@ -192,7 +192,11 @@ public sealed class BiblePage : ContentPage
             _bookmarks.Add(new BibleBookmark { TranslationId = _translation.Id, TranslationName = _translation.Name, BookId = _book.Id, BookName = _book.Name, Chapter = _selectedVerse.Chapter, Verse = _selectedVerse.Verse, VerseText = _selectedVerse.Text });
             _status.Text = "Verset ajouté aux favoris.";
         }
-        else _status.Text = "Ce verset est déjà dans vos favoris.";
+        else
+        {
+            _bookmarks.Remove(existing);
+            _status.Text = "Verset retiré des favoris.";
+        }
         await SaveBookmarksAsync();
     }
 
