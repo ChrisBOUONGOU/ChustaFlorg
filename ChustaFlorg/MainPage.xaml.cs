@@ -125,6 +125,7 @@ public partial class MainPage : ContentPage
         _loadingEditor = true;
         TitleEditor.Text = slide.Title;
         BodyEditor.Text = slide.Body;
+        TransitionPicker.SelectedItem = slide.Transition;
         _loadingEditor = false;
         UpdatePreview();
     }
