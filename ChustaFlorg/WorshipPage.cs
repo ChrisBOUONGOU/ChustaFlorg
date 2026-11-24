@@ -10,7 +10,7 @@ public sealed class WorshipPage : ContentPage
     private readonly WorshipLibraryService _library = new();
     private readonly Action<IReadOnlyList<Slide>> _addToPresentation;
     private readonly SearchBar _search = new() { Placeholder = "Rechercher un chant, un auteur, un mot des paroles…" };
-    private readonly CollectionView _songList = new() { SelectionMode = SelectionMode.Single };
+    private readonly CollectionView _songList = new() { SelectionMode = SelectionMode.Single, HeightRequest = 330 };
     private readonly Entry _title = new() { Placeholder = "Titre du chant" };
     private readonly Entry _author = new() { Placeholder = "Auteur / compositeur" };
     private readonly Entry _key = new() { Placeholder = "Tonalité (ex. Sol, D, G)" };
@@ -18,7 +18,7 @@ public sealed class WorshipPage : ContentPage
     private readonly Entry _tags = new() { Placeholder = "Tags séparés par des virgules" };
     private readonly Picker _sectionType = new() { Title = "Type de section" };
     private readonly Editor _lyrics = new() { Placeholder = "Saisissez les paroles de cette section…", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 150 };
-    private readonly CollectionView _sections = new() { SelectionMode = SelectionMode.Single };
+    private readonly CollectionView _sections = new() { SelectionMode = SelectionMode.Single, HeightRequest = 170 };
     private readonly Label _status = new() { Text = "Bibliothèque locale", TextColor = Color.FromArgb("#D8B46A"), FontSize = 12 };
     private readonly ObservableCollection<SongSection> _songSections = [];
     private WorshipSong? _selectedSong;
@@ -126,6 +126,15 @@ public sealed class WorshipPage : ContentPage
         editorPane.Children.Add(_sections);
         editorPane.Children.Add(_sectionType);
         editorPane.Children.Add(MakeButton("+ Ajouter une section", "#263246", AddSectionAsync));
+        editorPane.Children.Add(new HorizontalStackLayout
+        {
+            Spacing = 8,
+            Children =
+            {
+                MakeButton("↑ Monter", "#263246", () => MoveSectionAsync(-1)),
+                MakeButton("↓ Descendre", "#263246", () => MoveSectionAsync(1))
+            }
+        });
         editorPane.Children.Add(_lyrics);
         editorPane.Children.Add(new HorizontalStackLayout
         {
@@ -269,6 +278,22 @@ public sealed class WorshipPage : ContentPage
         await SaveLibraryAsync();
     }
 
+    private async Task MoveSectionAsync(int offset)
+    {
+        if (_selectedSong is null || _selectedSection is null)
+            return;
+
+        var currentIndex = _songSections.IndexOf(_selectedSection);
+        var targetIndex = currentIndex + offset;
+        if (currentIndex < 0 || targetIndex < 0 || targetIndex >= _songSections.Count)
+            return;
+
+        _songSections.Move(currentIndex, targetIndex);
+        _selectedSong.Sections.Clear();
+        _selectedSong.Sections.AddRange(_songSections);
+        _sections.SelectedItem = _selectedSection;
+        await SaveLibraryAsync();
+    }
     private void UpdateSongMetadata()
     {
         if (_loading || _selectedSong is null) return;
