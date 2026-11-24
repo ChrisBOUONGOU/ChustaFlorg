@@ -94,7 +94,7 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Column="2" ColumnDefinitions="48,*" ColumnSpacing="0" BackgroundColor="#121A28">
+            <Grid x:Name="RightToolsPanel" Grid.Column="2" ColumnDefinitions="48,*" ColumnSpacing="0" BackgroundColor="#121A28">
                 <Border Grid.Column="0" BackgroundColor="#0B0F17" Stroke="#263246" StrokeThickness="1" Padding="4" StrokeShape="RoundRectangle 10">
                     <VerticalStackLayout Spacing="7">
                         <Button Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
