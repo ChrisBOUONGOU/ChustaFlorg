@@ -611,7 +611,32 @@ public sealed class WorshipPage : ContentPage
         if (string.IsNullOrWhiteSpace(url)) return;
         var username = await DisplayPromptAsync("Compte WebDAV", "Nom d'utilisateur");
         if (username is null) return;
-        var password = await DisplayPromptAsync("Mot de passe WebDAV", "Mot de passe", isPassword: true);
+        var passwordEntry = new Entry { IsPassword = true, Placeholder = "Mot de passe WebDAV" };
+        var completion = new TaskCompletionSource<string?>();
+        var passwordPage = new ContentPage
+        {
+            Title = "Mot de passe WebDAV",
+            BackgroundColor = Color.FromArgb("#0B0F17"),
+            Content = new VerticalStackLayout
+            {
+                Padding = 24, Spacing = 16,
+                Children =
+                {
+                    new Label { Text = "Saisissez le mot de passe du compte WebDAV.", TextColor = Colors.White },
+                    passwordEntry,
+                    new HorizontalStackLayout
+                    {
+                        Children =
+                        {
+                            new Button { Text = "Annuler", Command = new Command(async () => { completion.TrySetResult(null); await Navigation.PopModalAsync(); }) },
+                            new Button { Text = "Enregistrer", Command = new Command(async () => { completion.TrySetResult(passwordEntry.Text); await Navigation.PopModalAsync(); }) }
+                        }
+                    }
+                }
+            }
+        };
+        await Navigation.PushModalAsync(new NavigationPage(passwordPage));
+        var password = await completion.Task;
         if (password is null) return;
         await _sync.ConfigureAsync(url, username, password);
         _status.Text = "Synchronisation configurée · identifiants stockés de manière sécurisée";
