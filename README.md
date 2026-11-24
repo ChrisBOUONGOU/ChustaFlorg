@@ -22,13 +22,15 @@ The MAUI application currently provides an initial presentation workspace with:
 - Debounced automatic local save and a startup recovery prompt.
 - A live presentation view with previous/next navigation (separate window on Windows; full-screen modal view on mobile).
 - A responsive workspace that rearranges and scrolls the playlist, preview and inspector on narrower screens.
+- A Worship song library with local JSON persistence, search across titles/authors/tags/lyrics, metadata (key and BPM), and editable sections (intro, verses, pre-chorus, chorus, bridge, final and outro).
+- One-click conversion of song sections into slides, preserving their sequence and appending them to the service playlist.
 
-This is an early MVP foundation, not a finished replacement for the three products. Selecting a specific physical output display, stage/audience screen separation and production-grade media playback remain future work.
+This is an early MVP foundation, not a finished replacement for the three products. Cloud sync, song arrangements, bulk import/export and chord charts are not yet implemented. Selecting a specific physical output display, stage/audience screen separation and production-grade media playback remain future work.
 
 ## Roadmap
 
 1. **Reliability:** project backups, integrity checks, crash diagnostics and recovery testing.
-2. **Worship library:** songs, verse/chorus structure, tags, search and duplicate detection.
+2. **Worship library (first MVP delivered):** local song catalog, metadata, verse/chorus/bridge structure, tags, lyrics search and add-to-service flow. Next: arrangements, duplicate detection, import/export and chord sheets.
 3. **Bible module:** translations with appropriate distribution rights, offline availability, bookmarks and notes.
 4. **Media engine:** image/video/audio playback, backgrounds, transition controls and missing-file repair.
 5. **Live production:** explicit display selection, audience/stage outputs, next-slide confidence monitor and blackout.
