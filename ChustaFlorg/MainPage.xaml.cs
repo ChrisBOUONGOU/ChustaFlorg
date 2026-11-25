@@ -129,9 +129,6 @@ public partial class MainPage : ContentPage
         Workspace.RowDefinitions.Clear();
         RightToolsPanel.ColumnDefinitions.Clear();
         RightToolsPanel.RowDefinitions.Clear();
-        ToolBarLayout.ColumnDefinitions.Clear();
-        ToolBarLayout.RowDefinitions.Clear();
-
         if (compact)
         {
             Workspace.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
@@ -146,28 +143,10 @@ public partial class MainPage : ContentPage
             Grid.SetRow(RightToolsPanel, 2);
 
             RightToolsPanel.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            RightToolsPanel.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             RightToolsPanel.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            Grid.SetRow(ToolBarBorder, 0);
-            Grid.SetColumn(ToolBarBorder, 0);
-            Grid.SetRow(RightPanelHost, 1);
+            Grid.SetRow(RightPanelHost, 0);
             Grid.SetColumn(RightPanelHost, 0);
             RightPanelHost.Margin = new Thickness(0);
-            ToolBarLayout.ColumnSpacing = 8;
-            ToolBarLayout.RowSpacing = 6;
-            for (var column = 0; column < 4; column++)
-                ToolBarLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            for (var row = 0; row < 3; row++)
-                ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton, ToolImportExportButton };
-            for (var i = 0; i < toolButtons.Length; i++)
-            {
-                Grid.SetRow(toolButtons[i], i / 4);
-                Grid.SetColumn(toolButtons[i], i % 4);
-                toolButtons[i].WidthRequest = 42;
-                toolButtons[i].HeightRequest = 42;
-            }
         }
         else
         {
@@ -182,28 +161,11 @@ public partial class MainPage : ContentPage
             Grid.SetRow(RightToolsPanel, 0);
             Grid.SetColumn(RightToolsPanel, 2);
 
-            RightToolsPanel.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(48)));
             RightToolsPanel.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             RightToolsPanel.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            Grid.SetRow(ToolBarBorder, 0);
-            Grid.SetColumn(ToolBarBorder, 0);
             Grid.SetRow(RightPanelHost, 0);
-            Grid.SetColumn(RightPanelHost, 1);
-            RightPanelHost.Margin = new Thickness(9, 0, 0, 0);
-            ToolBarLayout.ColumnSpacing = 0;
-            ToolBarLayout.RowSpacing = 7;
-            ToolBarLayout.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(38)));
-            for (var row = 0; row < 9; row++)
-                ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton, ToolImportExportButton };
-            for (var i = 0; i < toolButtons.Length; i++)
-            {
-                Grid.SetRow(toolButtons[i], i);
-                Grid.SetColumn(toolButtons[i], 0);
-                toolButtons[i].WidthRequest = 38;
-                toolButtons[i].HeightRequest = 42;
-            }
+            Grid.SetColumn(RightPanelHost, 0);
+            RightPanelHost.Margin = new Thickness(0);
         }
     }
 
