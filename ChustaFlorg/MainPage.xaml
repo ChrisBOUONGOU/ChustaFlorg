@@ -20,16 +20,15 @@
             </HorizontalStackLayout>
             <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" VerticalOptions="Center">
                 <Border x:Name="ToolBarBorder" BackgroundColor="#0B0F17" Stroke="#263246" StrokeThickness="1" Padding="4" StrokeShape="RoundRectangle 10">
-                    <Grid x:Name="ToolBarLayout" RowDefinitions="Auto" ColumnDefinitions="38,38,38,38,38,38,38,38,38" ColumnSpacing="4" RowSpacing="0">
+                    <Grid x:Name="ToolBarLayout" RowDefinitions="Auto" ColumnDefinitions="38,38,38,38,38,38,38,38" ColumnSpacing="4" RowSpacing="0">
                         <Button x:Name="ToolPropertiesButton" Grid.Row="0" Grid.Column="0" Text="⚙" Clicked="OnToolPropertiesClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#263246" TextColor="#D8B46A" FontSize="19"/>
                         <Button x:Name="ToolMediaButton" Grid.Row="0" Grid.Column="1" Text="▣" Clicked="OnToolMediaClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
-                        <Button x:Name="ToolThemesButton" Grid.Row="0" Grid.Column="2" Text="🎨" Clicked="OnToolThemesClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
-                        <Button x:Name="ToolLyricsButton" Grid.Row="0" Grid.Column="3" Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
-                        <Button x:Name="ToolBibleButton" Grid.Row="0" Grid.Column="4" Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
-                        <Button x:Name="ToolAppearanceButton" Grid.Row="0" Grid.Column="5" Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
-                        <Button x:Name="ToolRemoteButton" Grid.Row="0" Grid.Column="6" Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
-                        <Button x:Name="ToolReliabilityButton" Grid.Row="0" Grid.Column="7" Text="✓" Clicked="OnToolReliabilityClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="20"/>
-                        <Button x:Name="ToolImportExportButton" Grid.Row="0" Grid.Column="8" Text="⇄" Clicked="OnToolImportExportClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#D8B46A" FontSize="21"/>
+                        <Button x:Name="ToolLyricsButton" Grid.Row="0" Grid.Column="2" Text="♫" Clicked="OnToolLyricsClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="21"/>
+                        <Button x:Name="ToolBibleButton" Grid.Row="0" Grid.Column="3" Text="📖" Clicked="OnToolBibleClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="17"/>
+                        <Button x:Name="ToolAppearanceButton" Grid.Row="0" Grid.Column="4" Text="◉" Clicked="OnToolApplicationThemeClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="White" FontSize="19"/>
+                        <Button x:Name="ToolRemoteButton" Grid.Row="0" Grid.Column="5" Text="⌁" Clicked="OnToolRemoteClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="21"/>
+                        <Button x:Name="ToolReliabilityButton" Grid.Row="0" Grid.Column="6" Text="✓" Clicked="OnToolReliabilityClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#86EFAC" FontSize="20"/>
+                        <Button x:Name="ToolImportExportButton" Grid.Row="0" Grid.Column="7" Text="⇄" Clicked="OnToolImportExportClicked" WidthRequest="38" HeightRequest="42" Padding="0" HorizontalOptions="Center" BackgroundColor="#1A2435" TextColor="#D8B46A" FontSize="21"/>
                     </Grid>
                 </Border>
             </ScrollView>
@@ -159,7 +158,7 @@
                                     <Button Text="Nuit" Clicked="OnMediaBackgroundNightClicked" BackgroundColor="#111827" TextColor="White" FontSize="9" Padding="5"/>
                                     <Button Grid.Column="1" Text="Bordeaux" Clicked="OnMediaBackgroundBurgundyClicked" BackgroundColor="#5B1D35" TextColor="White" FontSize="9" Padding="5"/>
                                     <Button Grid.Column="2" Text="Forêt" Clicked="OnMediaBackgroundForestClicked" BackgroundColor="#164E3B" TextColor="White" FontSize="9" Padding="5"/>
-                                    <Button Grid.Column="3" Text="Clair" Clicked="OnMediaBackgroundLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827" FontSize="9" Padding="5"/>
+                                    <Button Grid.Column="2" Text="Clair" Clicked="OnMediaBackgroundLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827" FontSize="9" Padding="5"/>
                                 </Grid>
                                 <Label Text="TRANSITION" TextColor="#D8B46A" FontSize="9" FontAttributes="Bold"/>
                                 <Picker x:Name="TransitionPicker" Title="Choisir une transition" TextColor="White" BackgroundColor="#1A2435">
@@ -169,14 +168,6 @@
                                 <Button Text="Supprimer le média" Clicked="OnDeleteMediaClicked" BackgroundColor="#30202A" TextColor="#FCA5A5" FontSize="11" Padding="8"/>
                             </VerticalStackLayout>
                         </ScrollView>
-                    </Border>
-                    <Border x:Name="ThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="10"><Label Text="THÈMES DE DIAPOSITIVE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                            <Button Text="Bleu nuit" Clicked="OnThemeNightClicked" BackgroundColor="#111827" TextColor="White"/>
-                            <Button Text="Bordeaux" Clicked="OnThemeBurgundyClicked" BackgroundColor="#5B1D35" TextColor="White"/>
-                            <Button Text="Vert forêt" Clicked="OnThemeForestClicked" BackgroundColor="#164E3B" TextColor="White"/>
-                            <Button Text="Clair" Clicked="OnThemeLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827"/>
-                        </VerticalStackLayout>
                     </Border>
                     <Border x:Name="LyricsPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="WorshipContentHost"/></Border>
                     <Border x:Name="BiblePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="8" StrokeShape="RoundRectangle 12"><ContentView x:Name="BibleContentHost"/></Border>
@@ -213,7 +204,7 @@
                                     <Border BackgroundColor="#0B0F17" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
                                     <Border Grid.Column="1" BackgroundColor="#121A28" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
                                     <Border Grid.Column="2" BackgroundColor="#7A1F3D" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
-                                    <Border Grid.Column="3" BackgroundColor="#D8B46A" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
+                                    <Border Grid.Column="2" BackgroundColor="#D8B46A" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
                                 </Grid>
                                 <Label x:Name="ApplicationThemeStatusLabel" Text="Thème actuel" TextColor="#86EFAC" FontSize="10"/>
                             </VerticalStackLayout>
