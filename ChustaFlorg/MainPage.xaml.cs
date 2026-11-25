@@ -4,6 +4,11 @@ using System.IO;
 using ChustaFlorg.Models;
 using ChustaFlorg.Services;
 
+#if WINDOWS
+using Windows.Storage;
+using Windows.Storage.Pickers;
+#endif
+
 namespace ChustaFlorg;
 
 public partial class MainPage : ContentPage
@@ -392,6 +397,42 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async Task<string?> SaveExportToComputerAsync(string sourcePath, string suggestedFileName, string fileTypeName, string extension)
+    {
+#if WINDOWS
+        var mauiWindow = Application.Current?.Windows.FirstOrDefault();
+        if (mauiWindow?.Handler?.PlatformView is not Microsoft.UI.Xaml.Window nativeWindow)
+            throw new InvalidOperationException("La fenêtre Windows active est introuvable.");
+
+        var picker = new FileSavePicker
+        {
+            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+            SuggestedFileName = Path.GetFileNameWithoutExtension(suggestedFileName)
+        };
+        picker.FileTypeChoices.Add(fileTypeName, new List<string> { extension });
+        WinRT.Interop.InitializeWithWindow.Initialize(
+            picker,
+            WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow));
+
+        var destinationFile = await picker.PickSaveFileAsync();
+        if (destinationFile is null)
+            return null;
+
+        await using var source = File.OpenRead(sourcePath);
+        await using var destination = await destinationFile.OpenStreamForWriteAsync();
+        destination.SetLength(0);
+        await source.CopyToAsync(destination);
+        return destinationFile.Path;
+#else
+        await Share.Default.RequestAsync(new ShareFileRequest
+        {
+            Title = "Exporter " + fileTypeName,
+            File = new ShareFile(sourcePath)
+        });
+        return sourcePath;
+#endif
+    }
+
     private async void OnExportPresentationClicked(object? sender, EventArgs e)
     {
         var destination = Path.Combine(FileSystem.CacheDirectory, $"ChustaFlorg-{DateTime.Now:yyyyMMdd-HHmmss}.chustaflorgpkg");
@@ -399,13 +440,23 @@ public partial class MainPage : ContentPage
         {
             _project.Slides = _slides.ToList();
             var mediaCount = await _transferService.ExportPresentationAsync(_project, MediaDirectory, destination);
-            await Share.Default.RequestAsync(new ShareFileRequest
+            var savedPath = await SaveExportToComputerAsync(
+                destination,
+                Path.GetFileName(destination),
+                "Présentation ChustaFlorg",
+                ".chustaflorgpkg");
+            if (savedPath is null)
             {
-                Title = "Exporter la présentation ChustaFlorg",
-                File = new ShareFile(destination)
-            });
+                TransferStatusLabel.Text = "Exportation annulée.";
+                return;
+            }
+#if WINDOWS
+            TransferStatusLabel.Text = $"Présentation enregistrée : {_slides.Count} diapositive(s), {mediaCount} média(s).";
+            SetStatus("Présentation enregistrée sur l'ordinateur : " + savedPath);
+#else
             TransferStatusLabel.Text = $"Export préparé : {_slides.Count} diapositive(s), {mediaCount} média(s) associé(s).";
             SetStatus("Présentation prête à être partagée ou enregistrée.");
+#endif
         }
         catch (Exception ex)
         {
@@ -445,13 +496,23 @@ public partial class MainPage : ContentPage
         try
         {
             var count = await _transferService.ExportMediaLibraryAsync(MediaDirectory, destination);
-            await Share.Default.RequestAsync(new ShareFileRequest
+            var savedPath = await SaveExportToComputerAsync(
+                destination,
+                Path.GetFileName(destination),
+                "Médiathèque ChustaFlorg",
+                ".zip");
+            if (savedPath is null)
             {
-                Title = "Exporter la médiathèque ChustaFlorg",
-                File = new ShareFile(destination)
-            });
+                TransferStatusLabel.Text = "Exportation de la médiathèque annulée.";
+                return;
+            }
+#if WINDOWS
+            TransferStatusLabel.Text = $"Médiathèque enregistrée : {count} fichier(s).";
+            SetStatus("Médiathèque enregistrée sur l'ordinateur : " + savedPath);
+#else
             TransferStatusLabel.Text = $"Export de la médiathèque prêt : {count} fichier(s).";
             SetStatus("Médiathèque prête à être partagée ou enregistrée.");
+#endif
         }
         catch (Exception ex)
         {
