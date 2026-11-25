@@ -48,7 +48,7 @@ public partial class MainPage : ContentPage
         MediaAssetsView.ItemsSource = _mediaAssets;
         BibleContentHost.Content = new BiblePage(AddSlidesToPlaylist);
         WorshipContentHost.Content = new WorshipPage(AddSlidesToPlaylist);
-        ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames;
+        ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames.ToList();
         ApplicationThemePicker.SelectedItem = ApplicationThemeService.GetSavedThemeName();
         LoadMediaLibrary();
         SlidesList.SelectedItem = _slides.FirstOrDefault();
