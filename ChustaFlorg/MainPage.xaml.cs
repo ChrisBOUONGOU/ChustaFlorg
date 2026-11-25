@@ -528,7 +528,6 @@ public partial class MainPage : ContentPage
     {
         InspectorPanel.IsVisible = panel == "Properties";
         MediaPanel.IsVisible = panel == "Media";
-        ThemePanel.IsVisible = panel == "Themes";
         ApplicationThemePanel.IsVisible = panel == "ApplicationTheme";
         LyricsPanel.IsVisible = panel == "Lyrics";
         BiblePanel.IsVisible = panel == "Bible";
@@ -539,7 +538,6 @@ public partial class MainPage : ContentPage
 
     private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
     private void OnToolMediaClicked(object? sender, EventArgs e) => ShowRightPanel("Media");
-    private void OnToolThemesClicked(object? sender, EventArgs e) => ShowRightPanel("Themes");
     private void OnToolApplicationThemeClicked(object? sender, EventArgs e) => ShowRightPanel("ApplicationTheme");
     private void OnToolLyricsClicked(object? sender, EventArgs e) => ShowRightPanel("Lyrics");
     private void OnToolBibleClicked(object? sender, EventArgs e) => ShowRightPanel("Bible");
@@ -552,25 +550,6 @@ public partial class MainPage : ContentPage
     private void OnToolImportExportClicked(object? sender, EventArgs e) => ShowRightPanel("ImportExport");
 
     private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
-
-    private void ApplySlideTheme(string background, string foreground)
-    {
-        if (SelectedSlide is not Slide slide)
-        {
-            SetStatus("Sélectionnez une diapositive avant de choisir un thème.");
-            return;
-        }
-
-        slide.BackgroundColor = background;
-        slide.TextColor = foreground;
-        SetStatus("Thème appliqué à la diapositive sélectionnée.");
-        ScheduleAutosave();
-    }
-
-    private void OnThemeNightClicked(object? sender, EventArgs e) => ApplySlideTheme("#111827", "#FFFFFF");
-    private void OnThemeBurgundyClicked(object? sender, EventArgs e) => ApplySlideTheme("#5B1D35", "#FFFFFF");
-    private void OnThemeForestClicked(object? sender, EventArgs e) => ApplySlideTheme("#164E3B", "#FFFFFF");
-    private void OnThemeLightClicked(object? sender, EventArgs e) => ApplySlideTheme("#F1F5F9", "#111827");
 
     private void OnApplicationThemeChanged(object? sender, EventArgs e)
     {
