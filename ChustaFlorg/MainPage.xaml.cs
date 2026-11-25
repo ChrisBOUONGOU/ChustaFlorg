@@ -19,6 +19,7 @@ public partial class MainPage : ContentPage
     }
     private readonly ProjectService _projectService = new();
     private readonly ReliabilityService _reliabilityService = new();
+    private readonly ProjectTransferService _transferService = new();
     private PresentationProject _project = new();
     private bool _loadingEditor;
     private bool _recoveryChecked;
@@ -155,10 +156,10 @@ public partial class MainPage : ContentPage
             ToolBarLayout.RowSpacing = 6;
             for (var column = 0; column < 4; column++)
                 ToolBarLayout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            for (var row = 0; row < 2; row++)
+            for (var row = 0; row < 3; row++)
                 ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton };
+            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton, ToolImportExportButton };
             for (var i = 0; i < toolButtons.Length; i++)
             {
                 Grid.SetRow(toolButtons[i], i / 4);
@@ -191,10 +192,10 @@ public partial class MainPage : ContentPage
             ToolBarLayout.ColumnSpacing = 0;
             ToolBarLayout.RowSpacing = 7;
             ToolBarLayout.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(38)));
-            for (var row = 0; row < 8; row++)
+            for (var row = 0; row < 9; row++)
                 ToolBarLayout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton };
+            var toolButtons = new[] { ToolPropertiesButton, ToolMediaButton, ToolThemesButton, ToolLyricsButton, ToolBibleButton, ToolAppearanceButton, ToolRemoteButton, ToolReliabilityButton, ToolImportExportButton };
             for (var i = 0; i < toolButtons.Length; i++)
             {
                 Grid.SetRow(toolButtons[i], i);
@@ -361,6 +362,141 @@ public partial class MainPage : ContentPage
     }
 
 
+
+    private async Task<string> CopyPickedFileToCacheAsync(FileResult file, string prefix)
+    {
+        var destination = Path.Combine(FileSystem.CacheDirectory, $"{prefix}-{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}");
+        await using var source = await file.OpenReadAsync();
+        await using var target = File.Create(destination);
+        await source.CopyToAsync(target);
+        return destination;
+    }
+
+    private async void OnImportPresentationClicked(object? sender, EventArgs e)
+    {
+        string? temporaryPath = null;
+        string? safetyPath = null;
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Importer une présentation ChustaFlorg" });
+            if (file is null) return;
+
+            var confirmed = await DisplayAlert("Importer une présentation",
+                "La présentation actuellement ouverte sera remplacée. Une sauvegarde de sécurité sera créée avant l'importation.",
+                "Continuer", "Annuler");
+            if (!confirmed) return;
+
+            _project.Slides = _slides.ToList();
+            safetyPath = Path.Combine(FileSystem.CacheDirectory, $"import-safety-{Guid.NewGuid():N}.chustaflorg");
+            await _projectService.SaveAsync(_project, safetyPath);
+            await _reliabilityService.CreateBackupAsync(safetyPath);
+
+            temporaryPath = await CopyPickedFileToCacheAsync(file, "presentation-import");
+            PresentationProject imported;
+            if (Path.GetExtension(file.FileName).Equals(".chustaflorgpkg", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetExtension(file.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                var importRoot = Path.Combine(FileSystem.AppDataDirectory, "ImportedProjects", Guid.NewGuid().ToString("N"));
+                imported = await _transferService.ImportPresentationAsync(temporaryPath, importRoot);
+            }
+            else
+            {
+                await using var stream = File.OpenRead(temporaryPath);
+                imported = await _projectService.LoadAsync(stream);
+            }
+
+            _project = imported;
+            _slides.Clear();
+            foreach (var slide in _project.Slides) _slides.Add(slide);
+            if (_slides.Count == 0) _slides.Add(new Slide());
+            _selectedIndex = 0;
+            _activeSession = null;
+            SlidesList.SelectedItem = _slides[0];
+            UpdatePreview();
+            ScheduleAutosave();
+            TransferStatusLabel.Text = $"Présentation importée : {_slides.Count} diapositive(s).";
+            SetStatus("Présentation importée avec succès.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Import presentation", ex);
+            TransferStatusLabel.Text = "Importation impossible : " + ex.Message;
+        }
+        finally
+        {
+            try { if (temporaryPath is not null && File.Exists(temporaryPath)) File.Delete(temporaryPath); } catch { }
+            try { if (safetyPath is not null && File.Exists(safetyPath)) File.Delete(safetyPath); } catch { }
+        }
+    }
+
+    private async void OnExportPresentationClicked(object? sender, EventArgs e)
+    {
+        var destination = Path.Combine(FileSystem.CacheDirectory, $"ChustaFlorg-{DateTime.Now:yyyyMMdd-HHmmss}.chustaflorgpkg");
+        try
+        {
+            _project.Slides = _slides.ToList();
+            var mediaCount = await _transferService.ExportPresentationAsync(_project, MediaDirectory, destination);
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "Exporter la présentation ChustaFlorg",
+                File = new ShareFile(destination)
+            });
+            TransferStatusLabel.Text = $"Export préparé : {_slides.Count} diapositive(s), {mediaCount} média(s) associé(s).";
+            SetStatus("Présentation prête à être partagée ou enregistrée.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Export presentation", ex);
+            TransferStatusLabel.Text = "Exportation impossible : " + ex.Message;
+        }
+    }
+
+    private async void OnImportMediaLibraryClicked(object? sender, EventArgs e)
+    {
+        string? temporaryPath = null;
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Importer une médiathèque ChustaFlorg" });
+            if (file is null) return;
+            temporaryPath = await CopyPickedFileToCacheAsync(file, "media-library-import");
+            var imported = await _transferService.ImportMediaLibraryAsync(temporaryPath, MediaDirectory);
+            LoadMediaLibrary();
+            MediaAssetsView.ItemsSource = _mediaAssets;
+            TransferStatusLabel.Text = $"{imported} fichier(s) ajouté(s) à la médiathèque.";
+            SetStatus("Médiathèque importée avec succès.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Import media library", ex);
+            TransferStatusLabel.Text = "Importation de la médiathèque impossible : " + ex.Message;
+        }
+        finally
+        {
+            try { if (temporaryPath is not null && File.Exists(temporaryPath)) File.Delete(temporaryPath); } catch { }
+        }
+    }
+
+    private async void OnExportMediaLibraryClicked(object? sender, EventArgs e)
+    {
+        var destination = Path.Combine(FileSystem.CacheDirectory, $"ChustaFlorg-MediaLibrary-{DateTime.Now:yyyyMMdd-HHmmss}.zip");
+        try
+        {
+            var count = await _transferService.ExportMediaLibraryAsync(MediaDirectory, destination);
+            await Share.Default.RequestAsync(new ShareFileRequest
+            {
+                Title = "Exporter la médiathèque ChustaFlorg",
+                File = new ShareFile(destination)
+            });
+            TransferStatusLabel.Text = $"Export de la médiathèque prêt : {count} fichier(s).";
+            SetStatus("Médiathèque prête à être partagée ou enregistrée.");
+        }
+        catch (Exception ex)
+        {
+            _reliabilityService.LogError("Export media library", ex);
+            TransferStatusLabel.Text = "Exportation de la médiathèque impossible : " + ex.Message;
+        }
+    }
+
     private void ShowRightPanel(string panel)
     {
         InspectorPanel.IsVisible = panel == "Properties";
@@ -371,6 +507,7 @@ public partial class MainPage : ContentPage
         BiblePanel.IsVisible = panel == "Bible";
         RemotePanel.IsVisible = panel == "Remote";
         ReliabilityPanel.IsVisible = panel == "Reliability";
+        ImportExportPanel.IsVisible = panel == "ImportExport";
     }
 
     private void OnToolPropertiesClicked(object? sender, EventArgs e) => ShowRightPanel("Properties");
@@ -385,6 +522,7 @@ public partial class MainPage : ContentPage
         ShowRightPanel("Reliability");
         await RunDiagnosticsAsync();
     }
+    private void OnToolImportExportClicked(object? sender, EventArgs e) => ShowRightPanel("ImportExport");
 
     private Slide? SelectedSlide => SlidesList.SelectedItem as Slide;
 
