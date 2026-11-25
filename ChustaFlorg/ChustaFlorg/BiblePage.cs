@@ -114,7 +114,9 @@ public sealed class BiblePage : ContentView
 
         _reference.TextColor = _verseTextColor;
         _translationPicker.TextColor = _verseTextColor;
+        _translationPicker.TitleColor = _verseTextColor;
         _bookPicker.TextColor = _verseTextColor;
+        _bookPicker.TitleColor = _verseTextColor;
         _chapterEntry.TextColor = _verseTextColor;
         _searchEntry.TextColor = _verseTextColor;
         _noteEditor.TextColor = _verseTextColor;
