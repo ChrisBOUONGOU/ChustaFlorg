@@ -41,6 +41,10 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+        ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames;
+        var savedTheme = ApplicationThemeService.GetSavedThemeName();
+        ApplicationThemePicker.SelectedItem = savedTheme;
+        ApplyApplicationTheme(savedTheme);
         foreach (var slide in _project.Slides)
             _slides.Add(slide);
 
@@ -569,16 +573,17 @@ public partial class MainPage : ContentPage
     private void OnThemeForestClicked(object? sender, EventArgs e) => ApplySlideTheme("#164E3B", "#FFFFFF");
     private void OnThemeLightClicked(object? sender, EventArgs e) => ApplySlideTheme("#F1F5F9", "#111827");
 
-    private void OnDarkAppearanceClicked(object? sender, EventArgs e)
+    private void OnApplicationThemeChanged(object? sender, EventArgs e)
     {
-        BackgroundColor = Color.FromArgb("#0B0F17");
-        SetStatus("Mode sombre activé.");
+        if (ApplicationThemePicker.SelectedItem is string themeName)
+            ApplyApplicationTheme(themeName);
     }
 
-    private void OnLightAppearanceClicked(object? sender, EventArgs e)
+    private void ApplyApplicationTheme(string themeName)
     {
-        BackgroundColor = Color.FromArgb("#E2E8F0");
-        SetStatus("Mode clair activé pour l'arrière-plan de l'espace de travail.");
+        ApplicationThemeService.Apply(this, themeName);
+        ApplicationThemeStatusLabel.Text = "Thème actif : " + themeName;
+        SetStatus("Apparence de l'application mise à jour : " + themeName + ".");
     }
 
     private string MediaDirectory => System.IO.Path.Combine(FileSystem.AppDataDirectory, "MediaLibrary");
