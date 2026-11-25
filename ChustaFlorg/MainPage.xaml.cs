@@ -50,6 +50,7 @@ public partial class MainPage : ContentPage
         WorshipContentHost.Content = new WorshipPage(AddSlidesToPlaylist);
         ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames.ToList();
         ApplicationThemePicker.SelectedItem = ApplicationThemeService.GetSavedThemeName();
+        ApplyApplicationTheme(ApplicationThemePicker.SelectedItem as string ?? "Default");
         LoadMediaLibrary();
         SlidesList.SelectedItem = _slides.FirstOrDefault();
         UpdatePreview();
@@ -580,6 +581,8 @@ public partial class MainPage : ContentPage
     private void ApplyApplicationTheme(string themeName)
     {
         ApplicationThemeService.Apply(this, themeName);
+        if (BibleContentHost.Content is BiblePage biblePage)
+            biblePage.ApplyApplicationTheme(themeName);
         ApplicationThemeStatusLabel.Text = "Thème actif : " + themeName;
         SetStatus("Apparence de l'application mise à jour : " + themeName + ".");
     }
