@@ -118,6 +118,7 @@ public static class ApplicationThemeService
             case Picker picker:
                 picker.BackgroundColor = Map(picker.BackgroundColor);
                 picker.TextColor = Map(picker.TextColor) ?? picker.TextColor;
+                picker.TitleColor = Map(picker.TextColor) ?? picker.TextColor;
                 break;
             case BoxView box:
                 box.Color = Map(box.Color) ?? box.Color;
