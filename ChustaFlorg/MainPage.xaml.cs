@@ -41,10 +41,6 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
-        ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames;
-        var savedTheme = ApplicationThemeService.GetSavedThemeName();
-        ApplicationThemePicker.SelectedItem = savedTheme;
-        ApplyApplicationTheme(savedTheme);
         foreach (var slide in _project.Slides)
             _slides.Add(slide);
 
@@ -52,6 +48,8 @@ public partial class MainPage : ContentPage
         MediaAssetsView.ItemsSource = _mediaAssets;
         BibleContentHost.Content = new BiblePage(AddSlidesToPlaylist);
         WorshipContentHost.Content = new WorshipPage(AddSlidesToPlaylist);
+        ApplicationThemePicker.ItemsSource = ApplicationThemeService.ThemeNames;
+        ApplicationThemePicker.SelectedItem = ApplicationThemeService.GetSavedThemeName();
         LoadMediaLibrary();
         SlidesList.SelectedItem = _slides.FirstOrDefault();
         UpdatePreview();
