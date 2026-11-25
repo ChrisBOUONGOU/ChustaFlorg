@@ -49,11 +49,15 @@ public static class ApplicationThemeService
         if (!Palettes.TryGetValue(themeName, out var palette))
             palette = Palettes["Default"];
 
-        ApplyToElement(root, palette);
+        var currentName = GetSavedThemeName();
+        var previousPalette = Palettes.TryGetValue(currentName, out var currentPalette)
+            ? currentPalette
+            : Palettes["Default"];
+        ApplyToElement(root, palette, previousPalette);
         Preferences.Default.Set(PreferenceKey, themeName);
     }
 
-    private static void ApplyToElement(VisualElement element, Palette p)
+    private static void ApplyToElement(VisualElement element, Palette p, Palette previous)
     {
         Color? Map(Color? color)
         {
@@ -63,22 +67,20 @@ public static class ApplicationThemeService
                 hex = "#" + hex[3..];
             return hex switch
             {
-                "#0B0F17" => Color.FromArgb(p.Background),
-                "#121A28" => Color.FromArgb(p.Surface),
-                "#1A2435" => Color.FromArgb(p.SurfaceAlt),
-                "#263246" or "#334155" => Color.FromArgb(p.Border),
-                "#FFFFFF" => Color.FromArgb(p.Text),
-                "#94A3B8" or "#64748B" => Color.FromArgb(p.Muted),
-                "#D8B46A" => Color.FromArgb(p.Accent),
-                "#7A1F3D" => Color.FromArgb(p.Primary),
-                "#202C40" => Color.FromArgb(p.Button),
-                "#30202A" => Color.FromArgb(p.Danger),
-                "#FCA5A5" => Color.FromArgb(p.DangerText),
-                "#86EFAC" => Color.FromArgb(p.Success),
-                "#111827" => Color.FromArgb(p.Preview),
-                "#E2E8F0" or "#F1F5F9" => Color.FromArgb(p.SurfaceAlt),
-                "#5B1D35" => Color.FromArgb(p.Primary),
-                "#164E3B" => Color.FromArgb(p.Button),
+                _ when hex == "#0B0F17" || hex == previous.Background => Color.FromArgb(p.Background),
+                _ when hex == "#121A28" || hex == previous.Surface => Color.FromArgb(p.Surface),
+                _ when hex == "#1A2435" || hex == previous.SurfaceAlt => Color.FromArgb(p.SurfaceAlt),
+                _ when hex == "#263246" || hex == "#334155" || hex == previous.Border => Color.FromArgb(p.Border),
+                _ when hex == "#FFFFFF" || hex == previous.Text => Color.FromArgb(p.Text),
+                _ when hex == "#94A3B8" || hex == "#64748B" || hex == previous.Muted => Color.FromArgb(p.Muted),
+                _ when hex == "#D8B46A" || hex == previous.Accent => Color.FromArgb(p.Accent),
+                _ when hex == "#7A1F3D" || hex == "#5B1D35" || hex == previous.Primary => Color.FromArgb(p.Primary),
+                _ when hex == "#202C40" || hex == "#164E3B" || hex == previous.Button => Color.FromArgb(p.Button),
+                _ when hex == "#30202A" || hex == previous.Danger => Color.FromArgb(p.Danger),
+                _ when hex == "#FCA5A5" || hex == previous.DangerText => Color.FromArgb(p.DangerText),
+                _ when hex == "#86EFAC" || hex == previous.Success => Color.FromArgb(p.Success),
+                _ when hex == "#111827" || hex == previous.Preview => Color.FromArgb(p.Preview),
+                _ when hex == "#E2E8F0" || hex == "#F1F5F9" => Color.FromArgb(p.SurfaceAlt),
                 _ => color
             };
         }
@@ -126,7 +128,7 @@ public static class ApplicationThemeService
         {
             foreach (var child in tree.GetVisualChildren())
                 if (child is VisualElement visualChild)
-                    ApplyToElement(visualChild, p);
+                    ApplyToElement(visualChild, p, previous);
         }
     }
 }
