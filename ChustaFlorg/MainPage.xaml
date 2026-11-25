@@ -161,7 +161,7 @@
                                     <Button Grid.Column="2" Text="Clair" Clicked="OnMediaBackgroundLightClicked" BackgroundColor="#F1F5F9" TextColor="#111827" FontSize="9" Padding="5"/>
                                 </Grid>
                                 <Label Text="TRANSITION" TextColor="#D8B46A" FontSize="9" FontAttributes="Bold"/>
-                                <Picker x:Name="TransitionPicker" Title="Choisir une transition" TextColor="White" BackgroundColor="#1A2435">
+                                <Picker x:Name="TransitionPicker" Title="Choisir une transition" TitleColor="White" TextColor="White" BackgroundColor="#1A2435">
                                     <Picker.Items><x:String>Aucune</x:String><x:String>Fondu</x:String><x:String>Glissement</x:String></Picker.Items>
                                 </Picker>
                                 <Button Text="Appliquer la transition" Clicked="OnApplyTransitionClicked" BackgroundColor="#263246" TextColor="White" FontSize="11" Padding="8"/>
@@ -198,7 +198,7 @@
                             <VerticalStackLayout Spacing="11">
                                 <Label Text="APPARENCE DE L'APPLICATION" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
                                 <Label Text="Choisissez une palette pour modifier les couleurs de toute l'interface. Le changement est immédiat et votre choix sera conservé." TextColor="#94A3B8" FontSize="10" LineBreakMode="WordWrap"/>
-                                <Picker x:Name="ApplicationThemePicker" Title="Choisir un thème" TextColor="White" BackgroundColor="#1A2435" SelectedIndexChanged="OnApplicationThemeChanged"/>
+                                <Picker x:Name="ApplicationThemePicker" Title="Choisir un thème" TitleColor="White" TextColor="White" BackgroundColor="#1A2435" SelectedIndexChanged="OnApplicationThemeChanged"/>
                                 <Label Text="APERÇU DES COULEURS" TextColor="#94A3B8" FontSize="9" FontAttributes="Bold"/>
                                 <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="5">
                                     <Border BackgroundColor="#0B0F17" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
