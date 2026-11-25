@@ -203,10 +203,21 @@
                         </VerticalStackLayout></ScrollView>
                     </Border>
                     <Border x:Name="ApplicationThemePanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
-                        <VerticalStackLayout Spacing="10"><Label Text="APPARENCE" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
-                            <Button Text="Mode sombre" Clicked="OnDarkAppearanceClicked" BackgroundColor="#263246" TextColor="White"/>
-                            <Button Text="Mode clair" Clicked="OnLightAppearanceClicked" BackgroundColor="#E2E8F0" TextColor="#111827"/>
-                        </VerticalStackLayout>
+                        <ScrollView>
+                            <VerticalStackLayout Spacing="11">
+                                <Label Text="APPARENCE DE L'APPLICATION" TextColor="#D8B46A" FontSize="10" FontAttributes="Bold"/>
+                                <Label Text="Choisissez une palette pour modifier les couleurs de toute l'interface. Le changement est immédiat et votre choix sera conservé." TextColor="#94A3B8" FontSize="10" LineBreakMode="WordWrap"/>
+                                <Picker x:Name="ApplicationThemePicker" Title="Choisir un thème" TextColor="White" BackgroundColor="#1A2435" SelectedIndexChanged="OnApplicationThemeChanged"/>
+                                <Label Text="APERÇU DES COULEURS" TextColor="#94A3B8" FontSize="9" FontAttributes="Bold"/>
+                                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="5">
+                                    <Border BackgroundColor="#0B0F17" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
+                                    <Border Grid.Column="1" BackgroundColor="#121A28" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
+                                    <Border Grid.Column="2" BackgroundColor="#7A1F3D" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
+                                    <Border Grid.Column="3" BackgroundColor="#D8B46A" Stroke="#334155" StrokeThickness="1" HeightRequest="34"/>
+                                </Grid>
+                                <Label x:Name="ApplicationThemeStatusLabel" Text="Thème actuel" TextColor="#86EFAC" FontSize="10"/>
+                            </VerticalStackLayout>
+                        </ScrollView>
                     </Border>
                     <Border x:Name="ReliabilityPanel" IsVisible="False" BackgroundColor="#121A28" Stroke="#263246" StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
                         <ScrollView>
