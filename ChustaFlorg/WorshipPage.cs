@@ -22,11 +22,11 @@ public sealed class WorshipPage : ContentView
     private readonly Entry _tempo = new() { Placeholder = "Tempo en BPM (facultatif)", Keyboard = Keyboard.Numeric };
     private readonly Entry _tags = new() { Placeholder = "Tags séparés par des virgules" };
     private readonly Editor _chordLyrics = new() { Placeholder = "Accords : [G]Amazing [D]grace", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 100 };
-    private readonly Picker _arrangementPicker = new() { Title = "Arrangement" };
+    private readonly Picker _arrangementPicker = new() { Title = "Arrangement", TitleColor = Colors.White, TextColor = Colors.White, BackgroundColor = Color.FromArgb("#1A2435") };
     private readonly ObservableCollection<ArrangementEntry> _arrangementRows = [];
     private readonly CollectionView _arrangementList = new() { SelectionMode = SelectionMode.Single, HeightRequest = 130 };
     private readonly Switch _includeChords = new();
-    private readonly Picker _sectionType = new() { Title = "Type de section" };
+    private readonly Picker _sectionType = new() { Title = "Type de section", TitleColor = Colors.White, TextColor = Colors.White, BackgroundColor = Color.FromArgb("#1A2435") };
     private readonly Editor _lyrics = new() { Placeholder = "Saisissez les paroles de cette section…", AutoSize = EditorAutoSizeOption.TextChanges, MinimumHeightRequest = 150 };
     private readonly CollectionView _sections = new() { SelectionMode = SelectionMode.Single, HeightRequest = 170 };
     private readonly Label _status = new() { Text = "Bibliothèque locale", TextColor = Color.FromArgb("#D8B46A"), FontSize = 12 };
