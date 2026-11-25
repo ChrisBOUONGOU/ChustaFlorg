@@ -26,6 +26,7 @@ public sealed class BiblePage : ContentView
     private BibleVerse? _selectedVerse;
     private BibleChapter? _chapter;
     private bool _loading;
+    private Color _verseTextColor = Colors.White;
 
     public BiblePage(Action<IReadOnlyList<Slide>> addSlides)
     {
@@ -104,9 +105,29 @@ public sealed class BiblePage : ContentView
         return button;
     }
 
-    private static DataTemplate VerseTemplate() => new(() =>
+    public void ApplyApplicationTheme(string themeName)
     {
-        var label = new Label { TextColor = Colors.White, FontSize = 14, LineBreakMode = LineBreakMode.WordWrap };
+        // Les thèmes colorés utilisent du texte blanc; le thème blanc utilise du texte foncé.
+        _verseTextColor = string.Equals(themeName, "Pure White", StringComparison.OrdinalIgnoreCase)
+            ? Color.FromArgb("#17212B")
+            : Colors.White;
+
+        _reference.TextColor = _verseTextColor;
+        _translationPicker.TextColor = _verseTextColor;
+        _bookPicker.TextColor = _verseTextColor;
+        _chapterEntry.TextColor = _verseTextColor;
+        _searchEntry.TextColor = _verseTextColor;
+        _noteEditor.TextColor = _verseTextColor;
+        _verses.BackgroundColor = Colors.Transparent;
+        _results.BackgroundColor = Colors.Transparent;
+
+        _verses.ItemTemplate = VerseTemplate();
+        _results.ItemTemplate = VerseTemplate();
+    }
+
+    private DataTemplate VerseTemplate() => new(() =>
+    {
+        var label = new Label { TextColor = _verseTextColor, FontSize = 14, LineBreakMode = LineBreakMode.WordWrap };
         label.SetBinding(Label.TextProperty, nameof(BibleVerse.DisplayText));
         return new Border { Padding = 9, Margin = new Thickness(0, 2), Stroke = Color.FromArgb("#263246"), StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 }, Content = label };
     });
