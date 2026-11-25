@@ -59,6 +59,8 @@ public static class ApplicationThemeService
         {
             if (color is null) return null;
             var hex = color.ToHex().ToUpperInvariant();
+            if (hex.Length == 9)
+                hex = "#" + hex[3..];
             return hex switch
             {
                 "#0B0F17" => Color.FromArgb(p.Background),
